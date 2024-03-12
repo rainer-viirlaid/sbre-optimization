@@ -25,6 +25,11 @@ type InitialOptimizations<'t> =
     | SearchValuesPotentialStart of prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t>
     /// just a single set like [ae]
     // | SinglePotentialStart of prefix: SearchValues<char> * inverted: bool
+    
+type StartSearchOptimization =
+    | NoSkip
+    | Original
+    | Weighted
 
 
 

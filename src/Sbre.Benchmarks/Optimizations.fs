@@ -13,9 +13,9 @@ open Sbre.Pat
 open Sbre.Types
 open System.Text.Json.Nodes
 open System.Buffers
-let fullInput = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
+// let fullInput = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
 // let fullInput = __SOURCE_DIRECTORY__ + "/data/sherlock.txt" |> System.IO.File.ReadAllText
-// let fullInput = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
+let fullInput = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
 
 let frequenciesJsonText = __SOURCE_DIRECTORY__ + "/data/charFreqWithControl.json"  |> System.IO.File.ReadAllText
 
@@ -24,7 +24,6 @@ let testInput =
                 fullInput
                 // |> String.replicate 10
                 // |> String.replicate 100
-// let testInput = "yabcabca"
 
 
 module Patterns =
@@ -34,7 +33,6 @@ module Patterns =
     let DATE = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-date.txt" )
     
     // rust-src-tools-3b0d4813.txt
-    // TODO: Not finding matches, possibly due to lookarounds
     let URL = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-url.txt" )
     
     [<Literal>] // en-sampled.txt
@@ -49,19 +47,19 @@ module Patterns =
     let HAVE_THERE = ".*have.*&.*there.*"
 
     [<Literal>] // twain
-    let TWAIN = "Twain" // TODO: StringPrefix
+    let TWAIN = "Twain"
 
     [<Literal>] // twain
-    let TWAIN_CASEIGNORE = "(?i)Twain" // TODO: StringPrefixCaseIgnore
+    let TWAIN_CASEIGNORE = "(?i)Twain"
 
     [<Literal>] // twain
-    let AZ_SHING = "[a-z]shing" // TODO: StringPrefix
+    let AZ_SHING = "[a-z]shing"
 
     [<Literal>] // twain
     let HUCK_SAW = @"Huck[a-zA-Z]+|Saw[a-zA-Z]+"
 
     [<Literal>] // twain
-    let AQ_X = "[a-q][^u-z]{13}x" // TODO: Original does not find all results
+    let AQ_X = "[a-q][^u-z]{13}x"
 
     [<Literal>] // twain
     let TOM_SAWYER_HUCKLEBERRY_FINN = "Tom|Sawyer|Huckleberry|Finn"
@@ -79,7 +77,7 @@ module Patterns =
     let TOM_RIVER = "Tom.{10,25}river|river.{10,25}Tom"
 
     [<Literal>] // twain
-    let AZ_ING = "[a-zA-Z]+ing" // TODO: StringPrefix
+    let AZ_ING = "[a-zA-Z]+ing"
 
     [<Literal>] // twain
     let AZ_ING_SPACES = "\s[a-zA-Z]{0,12}ing\s"
@@ -88,64 +86,9 @@ module Patterns =
     let AZ_AWYER_INN = "([A-Za-z]awyer|[A-Za-z]inn)\s"
 
     [<Literal>] // twain
-    let QUOTES = @"[""'][^""']{0,30}[?!\.][""']" // TODO: SearchValuesPrefix
+    let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
 
 
-
-
-
-
-let collectNullablePositionsNoSkip ( matcher: RegexMatcher<TSet>, loc: byref<Location> ) =
-    assert (loc.Position > -1)
-    assert (loc.Reversed = true)
-    let mutable looping = true
-    let mutable currentStateId = matcher.GetOrCreateState(matcher.ReverseTrueStarredPattern).Id
-    let _stateArray = matcher.DfaStateArray
-    let mutable dfaState = _stateArray[currentStateId]
-    let mutable nullableCount = 0
-
-    while looping do
-        dfaState <- _stateArray[currentStateId]
-        let flags = dfaState.Flags
-        if flags.IsInitial then
-            loc.Position <- loc.Position
-
-        if matcher.StateIsNullable(flags, &loc, currentStateId) then
-            nullableCount <- nullableCount + 1
-
-        if loc.Position > 0 then
-            matcher.TakeTransition(flags, &currentStateId, &loc)
-            loc.Position <- Location.nextPosition loc
-        else
-            looping <- false
-
-    nullableCount
-
-
-let collectNullablePositionsOriginal ( matcher: RegexMatcher<TSet>, loc: byref<Location> ) =
-    assert (loc.Position > -1)
-    assert (loc.Reversed = true)
-    let mutable looping = true
-    let mutable currentStateId = matcher.GetOrCreateState(matcher.ReverseTrueStarredPattern).Id
-    let _stateArray = matcher.DfaStateArray
-    let mutable dfaState = _stateArray[currentStateId]
-    let mutable nullableCount = 0
-
-    while looping do
-        dfaState <- _stateArray[currentStateId]
-        let flags = dfaState.Flags
-        if flags.IsInitial && matcher.TrySkipInitialRev(&loc, &currentStateId) then () else
-
-        if matcher.StateIsNullable(flags, &loc, currentStateId) then
-            nullableCount <- nullableCount + 1
-
-        if loc.Position > 0 then
-            matcher.TakeTransition(flags, &currentStateId, &loc)
-            loc.Position <- Location.nextPosition loc
-        else
-            looping <- false
-
-    nullableCount
 
 let loadJsonCharFrequencies (jsonText: string) =
     let json = JsonValue.Parse jsonText
@@ -155,550 +98,104 @@ let loadJsonCharFrequencies (jsonText: string) =
 
 let characterFreq = loadJsonCharFrequencies frequenciesJsonText
 
-let commonalityScore (charSet: char array) =
-    charSet |> Array.map (fun c ->
-        if Char.IsAsciiLetterLower c then 10
-        else 0)
-    |> Array.sum
-
-let commonalityScore3 (charSet: char array) =
-    charSet |> Array.map (fun c ->
-        if characterFreq.ContainsKey(c) then characterFreq.Item c
-        else 0)
-    |> Array.sum
-
-let prefixSearchWeightedReversed (loc: byref<Location>) (cache: RegexCache<TSet>)
-    (weightedSets: inref<(int * MintermSearchValues<_>) list>) =
-    let textSpan = loc.Input
-    let rarestCharSet = snd weightedSets[0]
-    let rarestCharSetIndex = fst weightedSets[0]
-    let mutable searching = true
-
-    let mutable prevMatch = loc.Position
-    while searching do
-        match textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestCharSet.SearchValues) with
-        // | curMatch when (curMatch - rarestCharSetIndex >= 0 && curMatch - rarestCharSetIndex + weightedSets.Length <= textSpan.Length) ->
-        | curMatch when (curMatch - rarestCharSetIndex >= 0 && curMatch - rarestCharSetIndex + weightedSets.Length <= loc.Position) ->
-            let absMatchStart = curMatch - rarestCharSetIndex
-            let mutable fullMatch = true
-            let mutable i = 1
-            while i < weightedSets.Length && absMatchStart + (fst weightedSets[i]) < textSpan.Length && fullMatch do
-                let set = snd weightedSets[i]
-                if textSpan.Slice(absMatchStart + (fst weightedSets[i]), 1).IndexOfAny(set.SearchValues) = -1 then
-                    fullMatch <- false
-                else
-                    i <- i + 1
-            prevMatch <- absMatchStart + rarestCharSetIndex
-            if fullMatch && i = weightedSets.Length then
-                searching <- false
-                loc.Position <- absMatchStart + weightedSets.Length
-        | -1 ->
-            searching <- false
-            loc.Position <- 0
-        | outOfBounds -> prevMatch <- outOfBounds
-    ()
-
-let prefixSearchWeightedReversed2
-    (loc: byref<Location>)
-    (weightedSets: inref<struct(int * MintermSearchValues<_>) array>) =
-    // (a * b) is a reference tuple, struct(a * b) is a struct tuple
-    let textSpan = loc.Input
-    let struct(rarestCharSetIndex, rarestCharSet) = weightedSets[0]
-    let mutable searching = true
-    let mutable prevMatch = loc.Position
-    while searching do
-        // todo: .SearchValues
-        match textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestCharSet.SearchValues) with
-        | curMatch when (curMatch - rarestCharSetIndex >= 0 && curMatch - rarestCharSetIndex + weightedSets.Length <= loc.Position) ->
-            let absMatchStart = curMatch - rarestCharSetIndex
-            let mutable fullMatch = true
-            let mutable i = 1
-            let struct(weightedSetIndex,weightedSet) = weightedSets[i]
-            while fullMatch && i < weightedSets.Length && absMatchStart + (weightedSetIndex) < textSpan.Length do
-                let set = weightedSet
-                if not (set.Contains(textSpan[absMatchStart + weightedSetIndex])) then
-                    fullMatch <- false
-                else
-                    i <- i + 1
-            // prevMatch <-
-            //     if rarestCharSetIndex = 0 then absMatchStart - 1 else
-            //     absMatchStart + rarestCharSetIndex
-            prevMatch <- absMatchStart + rarestCharSetIndex
-            if fullMatch && i = weightedSets.Length then
-                searching <- false
-                loc.Position <- absMatchStart + weightedSets.Length
-        | -1 ->
-            searching <- false
-            loc.Position <- 0
-        | outOfBounds -> prevMatch <- outOfBounds
-    ()
-
-let prefixSearchWeightedReversed3
-    (loc: byref<Location>)
-    (weightedSets: inref<struct(int * MintermSearchValues<_>) array>) =
-    let textSpan = loc.Input
-    let currentPosition = loc.Position
-    let charSetsCount = weightedSets.Length
-    let struct(rarestCharSetIndex, rarestCharSet) = weightedSets[0]
-    let mutable searching = true
-    let mutable prevMatch = currentPosition
-    while searching do
-        match textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestCharSet.SearchValues) with
-        // | curMatch when (curMatch - rarestCharSetIndex >= 0 && curMatch - rarestCharSetIndex + weightedSets.Length < textSpan.Length) ->
-        | curMatch when (curMatch - rarestCharSetIndex >= 0 && curMatch - rarestCharSetIndex + charSetsCount <= currentPosition) ->
-            let absMatchStart = curMatch - rarestCharSetIndex 
-            let mutable fullMatch = true
-            let mutable i = 1
-            while fullMatch && i < charSetsCount do
-                let struct (weightedSetIndex,weightedSet) = weightedSets[i]
-                if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
-                    fullMatch <- false
-                else
-                    i <- i + 1
-            // ?
-            // prevMatch <-
-            //     if rarestCharSetIndex = 0 then absMatchStart - 1 else
-            //     absMatchStart + rarestCharSetIndex
-            prevMatch <- absMatchStart + rarestCharSetIndex
-            if fullMatch && i = charSetsCount then
-                searching <- false
-                loc.Position <- absMatchStart + charSetsCount
-        | -1 ->
-            searching <- false
-            loc.Position <- 0
-        | outOfBounds -> prevMatch <- outOfBounds
-    ()
-
-let prefixSearchWeightedReversed4
-    (cache: RegexCache<_>)
-    (loc: byref<Location>)
-    (weightedSets: inref<struct(int * MintermSearchValues<_>) array>)
-    (prefixLength: int) =
-    let textSpan = loc.Input
-    let currentPosition = loc.Position
-    let charSetsCount = weightedSets.Length
-    let struct(rarestCharSetIndex, rarestCharSet) = weightedSets[0]
-    let rarestSetMode = rarestCharSet.Mode
-    let rarestSetSV = rarestCharSet.SearchValues
-    let rarestSetMinterm = rarestCharSet.Minterm
-    let mutable searching = true
-    let mutable prevMatch = currentPosition
-    while searching do
-        let nextMatch =
-            match rarestSetMode with
-            | MintermSearchMode.InvertedSearchValues -> textSpan.Slice(0, prevMatch).LastIndexOfAnyExcept(rarestSetSV)
-            | MintermSearchMode.SearchValues -> textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestSetSV)
-            | MintermSearchMode.TSet ->
-                let mutable newMatch = -1
-                let mutable i = prevMatch
-                while i > 0 do
-                    i <- i - 1
-                    if cache.Solver.elemOfSet (cache.Classify(textSpan[i])) rarestSetMinterm then
-                        newMatch <- i
-                        i <- 0
-                newMatch
-            | _ -> failwith "invalid enum"
-        match nextMatch with
-        | curMatch when (curMatch - rarestCharSetIndex >= 0 && curMatch - rarestCharSetIndex + prefixLength <= currentPosition) ->
-            let absMatchStart = curMatch - rarestCharSetIndex
-            let mutable fullMatch = true
-            let mutable i = 1
-            while fullMatch && i < charSetsCount do
-                let struct (weightedSetIndex, weightedSet) = weightedSets[i]
-                if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
-                    fullMatch <- false
-                else
-                    i <- i + 1
-            prevMatch <- absMatchStart + rarestCharSetIndex
-            if fullMatch && i = charSetsCount then
-                searching <- false
-                loc.Position <- absMatchStart + prefixLength
-        | -1 ->
-            searching <- false
-            loc.Position <- 0
-        | outOfBounds -> prevMatch <- outOfBounds
-    ()
-
-
-let collectNullablePositionsWeightedSkip ( matcher: RegexMatcher<TSet>, loc: byref<Location>, weightedSets: inref<(int * MintermSearchValues<_>) list> ) =
-    assert (loc.Position > -1)
-    assert (loc.Reversed = true)
-    let mutable looping = true
-    let mutable currentStateId = matcher.GetOrCreateState(matcher.ReverseTrueStarredPattern).Id
-    let _stateArray = matcher.DfaStateArray
-    let mutable dfaState = _stateArray[currentStateId]
-    let mutable nullableCount = 0
-
-    while looping do
-        dfaState <- _stateArray[currentStateId]
-        let flags = dfaState.Flags
-        if flags.IsInitial then
-            prefixSearchWeightedReversed &loc matcher.Cache &weightedSets
-
-        if matcher.StateIsNullable(flags, &loc, currentStateId) then
-            nullableCount <- nullableCount + 1
-
-        if loc.Position > 0 then
-            matcher.TakeTransition(flags, &currentStateId, &loc)
-            loc.Position <- Location.nextPosition loc
-        else
-            looping <- false
-
-    nullableCount
-
-// ---------- slightly modified
-
-let collectNullablePositionsWeightedSkip2 ( matcher: RegexMatcher<TSet>, loc: byref<Location>, weightedSets: inref<struct (int * MintermSearchValues<_>) array> ) =
-    assert (loc.Position > -1)
-    assert (loc.Reversed = true)
-    let mutable looping = true
-    let mutable currentStateId = matcher.GetOrCreateState(matcher.ReverseTrueStarredPattern).Id
-    let _stateArray = matcher.DfaStateArray
-    let mutable dfaState = _stateArray[currentStateId]
-    let mutable nullableCount = 0
-
-    while looping do
-        dfaState <- _stateArray[currentStateId]
-        let flags = dfaState.Flags
-        if flags.IsInitial then
-            prefixSearchWeightedReversed2 &loc &weightedSets
-
-        if matcher.StateIsNullable(flags, &loc, currentStateId) then
-            nullableCount <- nullableCount + 1
-
-        if loc.Position > 0 then
-            matcher.TakeTransition(flags, &currentStateId, &loc)
-            loc.Position <- Location.nextPosition loc
-        else
-            looping <- false
-
-    nullableCount
-
-let collectNullablePositionsWeightedSkip3 ( matcher: RegexMatcher<TSet>, loc: byref<Location>, weightedSets: inref<struct (int * MintermSearchValues<_>) array> ) =
-    assert (loc.Position > -1)
-    assert (loc.Reversed = true)
-    let mutable looping = true
-    let mutable currentStateId = matcher.GetOrCreateState(matcher.ReverseTrueStarredPattern).Id
-    let _stateArray = matcher.DfaStateArray
-    let mutable dfaState = _stateArray[currentStateId]
-    let mutable nullableCount = 0
-
-    while looping do
-        dfaState <- _stateArray[currentStateId]
-        let flags = dfaState.Flags
-        if flags.IsInitial then
-            prefixSearchWeightedReversed3 &loc &weightedSets
-
-        if matcher.StateIsNullable(flags, &loc, currentStateId) then
-            nullableCount <- nullableCount + 1
-
-        if loc.Position > 0 then
-            matcher.TakeTransition(flags, &currentStateId, &loc)
-            loc.Position <- Location.nextPosition loc
-        else
-            looping <- false
-
-    nullableCount
-
-let collectNullablePositionsWeightedSkip4 ( matcher: RegexMatcher<TSet>, loc: byref<Location>, weightedSets: inref<struct (int * MintermSearchValues<_>) array>, prefixLength: int) =
-    assert (loc.Position > -1)
-    assert (loc.Reversed = true)
-    let mutable looping = true
-    let mutable currentStateId = matcher.GetOrCreateState(matcher.ReverseTrueStarredPattern).Id
-    let _stateArray = matcher.DfaStateArray
-    let mutable dfaState = _stateArray[currentStateId]
-    let mutable nullableCount = 0
-
-    while looping do
-        dfaState <- _stateArray[currentStateId]
-        let flags = dfaState.Flags
-        if flags.IsInitial then
-            prefixSearchWeightedReversed4 matcher.Cache &loc &weightedSets prefixLength
-
-        if matcher.StateIsNullable(flags, &loc, currentStateId) then
-            nullableCount <- nullableCount + 1
-
-        if loc.Position > 0 then
-            matcher.TakeTransition(flags, &currentStateId, &loc)
-            loc.Position <- Location.nextPosition loc
-        else
-            looping <- false
-
-    nullableCount
-
-
-
 
 
 
 [<MemoryDiagnoser(true)>]
 // [<ShortRunJob>]
-type PrefixCharsetSearch () =
+type PrefixCharsetSearch () as this =
 
-    // let regex = Sbre.Regex("Huck[a-zA-Z]+|Saw[a-zA-Z]+")
-    // let regex = Sbre.Regex("[a-zA-Z]+ckle|[a-zA-Z]+awy")
-    // let regex = Sbre.Regex(".*have.*&.*there.*")
+    // [<Params(
+    //     // Twain regexes
+    //     
+    //     // Patterns.WORD_END,
+    //     // Patterns.HAVE_THERE,
+    //     // Patterns.TWAIN,
+    //     // Patterns.TWAIN_CASEIGNORE,
+    //     // Patterns.AZ_SHING,
+    //     // Patterns.HUCK_SAW,
+    //     // Patterns.AQ_X,
+    //     // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+    //     // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+    //     // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+    //     // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+    //     // Patterns.TOM_RIVER,
+    //     // Patterns.AZ_ING,
+    //     // Patterns.AZ_ING_SPACES,
+    //     // Patterns.AZ_AWYER_INN,
+    //     // Patterns.QUOTES
+    //     
+    //     // Sherlock regexes
+    //     
+    //     // Patterns.SHERLOCK,
+    //     // Patterns.SHERLOCK_CASEIGNORE,
+    //     // Patterns.WORD_END,
+    //     // Patterns.HAVE_THERE,
+    //     // Patterns.AZ_SHING,
+    //     // Patterns.AQ_X,
+    //     // Patterns.AZ_ING,
+    //     // Patterns.AZ_ING_SPACES,
+    //     // Patterns.QUOTES
+    // )>]
+    // member val rs: string = Patterns.URL with get, set
+    member val rs: string = Patterns.DATE with get, set
     
-    // let regex = Sbre.Regex(@"\w+nn[ \n.,!?']")
-    // let regex = Sbre.Regex(@"\w+(nn[ \n.,!?']|xxx)")
-    // let regex = Sbre.Regex(@"\w+(nn\W|xxx)")
-    // let regex = Sbre.Regex(@"\w+(nn\W|xx\w)")
-    
-    // let regex = Sbre.Regex(@"\w+nn\W")
-    // let regex = Sbre.Regex(@"\W")
-    // let regex = Sbre.Regex(@" ")
-    
-    // let regex = Sbre.Regex(@"\W\w{2}[^A-z ]")
-    // let regex = Sbre.Regex(@"\W\w{2}\W")
-    // let regex = Sbre.Regex(@"[^\w\s]\w{9}[^\w\s]")
-    // let regex = Sbre.Regex(@"[^\w\s]\w+[^\w\s]")
-    
-    // let regex = Sbre.Regex(@"[""'][^""']{0,30}[?!\.][""']")
+    member val regex: Regex = Regex(Patterns.DATE) with get, set
 
-    // let regex = Sbre.Regex("Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty")
-    // Sets:          [IJlo];[or];[ ceh.0];[LMkn];[ eo];[ HWrs];[Aaiot];[adlrt];[almrs];[deot];[enrsy]
-    // Weighted sets 1: [or];[ eo];[IJlo];[LMkn];[ HWrs];[ ceh];[deot];[Aaiot];[adlrt];[almrs];[enrsy]
-    // Weighted sets 0: [IJlo];[or];[LMkn];[ eo];[ HWrs];[ ceh];[Aaiot];[deot];[adlrt];[almrs];[enrsy]
+    [<GlobalSetup(Target = "IntegratedNoSkip")>]
+    member this.NoSkipSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.NoSkip
 
-    // let regex = Sbre.Regex("abca|xxx")
-
-    // let rs = "[a-zA-Z]+ckl|[a-zA-Z]+awy"
-    // [<Params("[a-zA-Z]+ckle|[a-zA-Z]+awy", "Huck[a-zA-Z]+|Saw[a-zA-Z]+", ".*have.*&.*there.*")>]
-    // member val rs: string = "" with get, set
-
-    // let regex = Sbre.Regex(Patterns.URL)
-    let regex = Sbre.Regex(Patterns.HUCK_SAW)
-    
-
-    let cache = regex.TSetMatcher.Cache
-    let matcher = regex.TSetMatcher
-    // let optimizations = matcher.InitialOptimizations
-    let optimizations = regex.InitialReversePrefix
-
-    let prefixSets =
-        match optimizations with
-        | InitialOptimizations.SearchValuesPotentialStart(_,prefixMem) ->
-            // Array.toList (prefixMem.ToArray()) |> List.rev
-        // | InitialOptimizations.SearchValuesPotentialStart(_,prefixMem) ->
-            Array.toList (prefixMem.ToArray()) |> List.rev
-        | InitialOptimizations.SearchValuesPrefix(_,prefixMem, transitionNodeId) ->
-            Array.toList (prefixMem.ToArray()) |> List.rev
-        // | InitialOptimizations.SearchValuesPrefix(charSvMem, _) ->
-        //     let a = charSvMem.ToString()
-        //     let b = (charSvMem.ToArray()[0])
-        //     failwith "need to get SV with tsets not chars"
-            // Array.toList (charSvMem.ToArray()) |> List.rev
-        | _ -> failwith "incorrect optimizations"
+    [<Benchmark>]
+    member this.IntegratedNoSkip() =
+        this.regex.Count(testInput)
 
     
-    let weightedSets = []
-    let weightedSets3 = []
-    // let weightedSets = prefixSets |> List.mapi (fun i set ->
-    //         (i, set, commonalityScore (cache.MintermChars(set).Value.Span.ToArray())))
-    //                    |> List.sortBy (fun (_, _, score) -> score )
-    //                    |> List.map (fun (i, set, _) -> (i, set))
-    // let weightedSets3 = prefixSets |> List.mapi (fun i set ->
-    //         (i, set, commonalityScore3 (cache.MintermChars(set).Value.Span.ToArray())))
-    //                    |> List.sortBy (fun (_, _, score) -> score )
-    //                    |> List.map (fun (i, set, _) -> (i, set))
-    let weightedSets4 = prefixSets |> List.mapi (fun i set ->
-            let mintermSV = cache.MintermSearchValues(set)
-            match mintermSV.Mode with
-            | MintermSearchMode.TSet -> (i, mintermSV, 100000.0)
-            | MintermSearchMode.SearchValues -> (i, mintermSV, commonalityScore3 (mintermSV.CharactersInMinterm.Value.Span.ToArray()))
-            | MintermSearchMode.InvertedSearchValues -> (i, mintermSV, 10000.0)
-            | _ -> failwith "impossible!")
-                       |> List.sortBy (fun (_, _, score) -> score )
-                       |> List.map (fun (i, set, _) -> (i, set))
-                       |> fun (sets: (int * MintermSearchValues<_>) list) ->
-                           let _, bestSetType = sets[0]
-                           if bestSetType.Mode = MintermSearchMode.TSet then
-                               sets[0..0]
-                            else
-                               sets |> List.filter (fun (_, set) -> set.Mode <> MintermSearchMode.TSet)
-                       |> List.map (fun (i, set) -> struct(i, set))
-                       |> List.toArray
-    let prefixLength = prefixSets.Length
-
-    let weightedCharsetsArray1 =
-        weightedSets
-        |> Seq.map (fun (int,tset) ->
-            let chars = matcher.Cache.MintermSearchValues(tset)
-            (int, chars)
-        )
-        |> Seq.toList
-        // |> Seq.toArray
-
-
-    let weightedCharsetsArray2 =
-        weightedSets
-        |> Seq.map (fun (int,tset) ->
-            // TSet may contain up to 65k characters
-            // so if is too large it's better to use "Solver.elemOfSet (matcher.Cache.Classify(char)) tset"
-            // when such an example comes
-            let chars = matcher.Cache.MintermSearchValues(tset)
-            // ^ this allocation should really be moved out of the match algorithm
-            // --
-            // let isInverted = matcher.Cache.IsInverted(tset)
-            // ^ this is not used for simplicity because it's not needed
-            // but signals MintermChars is inverted
-            struct(int, chars)
-        )
-        |> Seq.toArray
-
-
-    let weightedCharsetsArray3 =
-        weightedSets3
-        |> Seq.map (fun (int,tset) ->
-            let chars = matcher.Cache.MintermSearchValues(tset)
-            struct(int, chars)
-        )
-        |> Seq.toArray
-
-
-    // [<Benchmark>]
-    member this.NoSkip() =
-        let textSpan = testInput.AsSpan()
-        let mutable loc = Location.createReversedSpan textSpan // end position, location reversed
-        collectNullablePositionsNoSkip (matcher, &loc)
-
-    // [<Benchmark>]
-    member this.Original() =
-        let textSpan = testInput.AsSpan()
-        let mutable loc = Location.createReversedSpan textSpan // end position, location reversed
-        collectNullablePositionsOriginal (matcher, &loc)
-
-
-    // [<Benchmark>]
-    member this.Weighted() =
-        // let a = Optimizations.printPrefixSets cache (prefixSets)
-        // let b = Optimizations.printPrefixSets cache (weightedSets |> List.map snd )
-        let textSpan = testInput.AsSpan()
-        let mutable loc = Location.createReversedSpan textSpan // end position, location reversed
-        collectNullablePositionsWeightedSkip (matcher, &loc, &weightedCharsetsArray1)
-
-    // [<Benchmark>]
-    member this.Weighted2() =
-        let textSpan = testInput.AsSpan()
-        let mutable loc = Location.createReversedSpan textSpan // end position, location reversed
-        collectNullablePositionsWeightedSkip2 (matcher, &loc, &weightedCharsetsArray2)
-        // |> (function 8562 -> () | n -> failwith $"invalid result {n}") // sanity check for .*have.*&.*there.*
-
-    // [<Benchmark>]
-    member this.Weighted3() =
-        let textSpan = testInput.AsSpan()
-        let mutable loc = Location.createReversedSpan textSpan // end position, location reversed
-        collectNullablePositionsWeightedSkip3 (matcher, &loc, &weightedCharsetsArray3)
-
-    // [<Benchmark>]
-    member this.Weighted4() =
-        let textSpan = testInput.AsSpan()
-        let mutable loc = Location.createReversedSpan textSpan // end position, location reversed
-        collectNullablePositionsWeightedSkip4 (matcher, &loc, &weightedSets4, prefixLength)
+    [<GlobalSetup(Target = "IntegratedOriginal")>]
+    member this.OriginalSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
 
     [<Benchmark>]
     member this.IntegratedOriginal() =
-        regex.TSetMatcher.DoUseWeightedSkip <- false
-        regex.Count(testInput)
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "IntegratedWeightedSimple")>]
+    member this.WeightedSimpleSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
+        this.regex.TSetMatcher.CalculatePrefixSetWeights()
 
     [<Benchmark>]
-    member this.IntegratedWeighted() =
-        regex.TSetMatcher.DoUseWeightedSkip <- true
-        regex.Count(testInput)
+    member this.IntegratedWeightedSimple() =
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "IntegratedWeightedFromFile")>]
+    member this.WeightedSimpleFromFile() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
+        this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
+
+    [<Benchmark>]
+    member this.IntegratedWeightedFromFile() =
+        this.regex.Count(testInput)
+        
+        
+    member this.testSet () =
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
+        this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
+        ()
+        
+    member this.testGo () =
+        let c = this.regex.Count(testInput)
+        ()
+        
 
 
 
-
-
-    // [<Benchmark>]
-    // member this.WeightedCharsetSearch() =
-    //     let regex = Regex(this.rs)
-    //     let cache = regex.TSetMatcher.Cache
-    //     let prefix = regex.InitialReversePrefix
-
-    //     let prefixSets =
-    //         match prefix with
-    //         | InitialOptimizations.PotentialStartPrefix(prefixMem) ->
-    //             Array.toList (prefixMem.ToArray()) |> List.rev
-    //         | _ -> failwith "debug"
-
-    //     let commonalityScore (charSet: char array) =
-    //         charSet |> Array.map (fun c ->
-    //             if Char.IsAsciiLetterLower c then 10
-    //             else 0)
-    //         |> Array.sum
-
-    //     let weightedSets = prefixSets |> List.mapi (fun i set ->
-    //         (i, set, commonalityScore (cache.MintermChars(set).ToArray())))
-    //                        |> List.sortBy (fun (_, _, score) -> score )
-    //                        |> List.map (fun (i, set, _) -> (i, set))
-
-    //     let rarestCharSet = cache.MintermChars(snd weightedSets[0]).ToArray().AsMemory()
-    //     let charSetIndex = fst weightedSets[0]
-    //     let mutable searching = true
-    //     let mutable matchPos = 0
-    //     let textSpan = fullInput.AsSpan()
-    //     // let potMatches = ResizeArray(100)
-
-    //     while searching do
-    //         match textSpan.Slice(matchPos).IndexOfAny(rarestCharSet.Span) with
-    //         | -1 -> searching <- false
-    //         | spanMatchStart when (spanMatchStart + matchPos - charSetIndex >= 0) ->
-    //             let absMatchStart = spanMatchStart + matchPos - charSetIndex
-    //             let mutable fullMatch = true
-    //             let mutable i = 1
-    //             while i < weightedSets.Length && absMatchStart + (fst weightedSets[i]) < textSpan.Length && fullMatch do
-    //                 let set = cache.MintermChars(snd weightedSets[i])
-    //                 if textSpan.Slice(absMatchStart + (fst weightedSets[i]), 1).IndexOfAny(set) = -1 then
-    //                     fullMatch <- false
-    //                 else
-    //                     i <- i + 1
-    //             matchPos <- absMatchStart + 1 + charSetIndex
-    //             // if fullMatch then potMatches.Add({MatchPosition.Index = absMatchStart; Length = weightedSets.Length })
-    //         | _ -> ()
-    //     // potMatches
-
-
-    // [<Benchmark>]
-    // member this.NonWeightedCharsetSearch() =
-    //     let regex = Regex(this.rs)
-    //     let cache = regex.TSetMatcher.Cache
-    //     let prefix = regex.InitialReversePrefix
-
-    //     let prefixSets =
-    //         match prefix with
-    //         | InitialOptimizations.PotentialStartPrefix(prefixMem) ->
-    //             Array.toList (prefixMem.ToArray()) |> List.rev
-    //         | _ -> failwith "debug"
-
-    //     let firstCharSet = cache.MintermChars(prefixSets[0]).ToArray().AsMemory()
-    //     let mutable searching = true
-
-    //     let mutable startPos = 0
-    //     let textSpan = fullInput.AsSpan()
-    //     // let potMatches = ResizeArray(100)
-    //     while searching do
-    //         match textSpan.Slice(startPos).IndexOfAny(firstCharSet.Span) with
-    //         | -1 -> searching <- false
-    //         | spanMatchStart ->
-    //             let absMatchStart = spanMatchStart + startPos
-    //             let mutable fullMatch = true
-    //             let mutable i = 1
-    //             while i < prefixSets.Length && absMatchStart + i < textSpan.Length && fullMatch do
-    //                 let set = cache.MintermChars(prefixSets[i])
-    //                 if textSpan.Slice(absMatchStart + i, 1).IndexOfAny(set) = -1 then
-    //                     fullMatch <- false
-    //                 else
-    //                     i <- i + 1
-    //             startPos <- absMatchStart + 1
-    //             // if fullMatch then potMatches.Add({MatchPosition.Index = absMatchStart; Length = prefixSets.Length })
-    //     // potMatches
-
-
-    // [<Benchmark>]
-    // member this.SbreCount() =
-    //     let regex = Regex(this.rs)
-    //     regex.Count fullInput
 
 [<MemoryDiagnoser>]
 [<ShortRunJob>]

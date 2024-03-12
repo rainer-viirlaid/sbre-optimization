@@ -7,6 +7,7 @@ open System.Globalization
 open System.Numerics
 open System.Reflection.Metadata
 open System.Runtime.CompilerServices
+open System.Text.Json.Nodes
 open System.Text.RuntimeRegexCopy.Symbolic
 open System.Text.RuntimeRegexCopy
 open Microsoft.FSharp.Core
@@ -78,7 +79,7 @@ type RegexSearchMode =
 
 [<Sealed>]
 type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
-    (uncanonicalizedNode: RegexNode<'t>, _cache: RegexCache<'t>, options: SbreOptions) =
+    (uncanonicalizedNode: RegexNode<'t>, _cache: RegexCache<'t>, options: SbreOptions) as this =
     inherit GenericRegexMatcher()
 
     let InitialDfaStateCapacity =
@@ -656,55 +657,86 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 
     let _lengthLookup = LengthLookup<'t>.MatchEnd
 #endif
+
     let _prefixSets =
         match _initialOptimizations with
-        | InitialOptimizations.SearchValuesPotentialStart(searchvalues, prefixMem) ->
-            Array.toList (prefixMem.ToArray()) |> List.rev
-        | InitialOptimizations.SearchValuesPrefix(searchvalues, prefixMem, _) ->
-            Array.toList (prefixMem.ToArray()) |> List.rev
-        | _ -> []
+        | InitialOptimizations.SearchValuesPotentialStart(_, tsetPrefix) ->
+            tsetPrefix.ToArray()
+        | InitialOptimizations.SearchValuesPrefix(_, tsetPrefix, _) ->
+            tsetPrefix.ToArray()
+        | InitialOptimizations.StringPrefix (charPrefix, _) ->
+            charPrefix.ToArray() |> Array.map _cache.Classify
+        | InitialOptimizations.StringPrefixCaseIgnore(_, _, charPrefix, _, _) ->
+            failwith "TODO"
+        | _ -> [||]
 
     let _prefixLength = _prefixSets.Length
 
-    let _commonalityScore (charSet: char array) =
+    let _commonalityScoreSimple (charSet: char array) =
         charSet
-        |> Array.map (fun c -> if Char.IsAsciiLetterLower c then 10 else 0)
+        |> Array.map (fun c -> if Char.IsAsciiLetterLower c then 10.0 else 0.0)
         |> Array.sum
+        
+    let _commonalityScore (charSet: char array, weights: IDictionary<char, float>) =
+        charSet |> Array.map (fun c ->
+            if weights.ContainsKey(c) then weights.Item c
+            else 0)
+        |> Array.sum
+        
+    let _loadJsonCharFrequencies (jsonText: string) =
+        let json = JsonValue.Parse jsonText
+        (json.Item "characters").AsArray() |> Seq.map (fun charFreq ->
+            ((charFreq.Item "character").GetValue<char>(), (charFreq.Item "frequency").GetValue<float>())
+            ) |> dict
 
-    let _weightedSets =
-        if _prefixSets.Length = 0 then [||] else
-        _prefixSets
-        |> List.mapi (fun i set ->
-            let mintermSV = _cache.MintermSearchValues(set)
-            match mintermSV.Mode with
-            | MintermSearchMode.TSet -> (i, mintermSV, 100000.0)
-            | MintermSearchMode.SearchValues ->
-                (i,
-                 mintermSV,
-                 _commonalityScore (mintermSV.CharactersInMinterm.Value.Span.ToArray()))
-            | MintermSearchMode.InvertedSearchValues -> (i, mintermSV, 10000.0)
-            | _ -> failwith "impossible!")
-        |> List.sortBy (fun (_, _, score) -> score)
-        |> List.map (fun (i, set, _) -> (i, set))
-        |> fun (sets: (int * MintermSearchValues<_>) list) ->
-            // Filter out TSets
-            let _, bestSetType = sets[0]
-
-            if bestSetType.Mode = MintermSearchMode.TSet then
-                sets[0..0]
-            else
-                sets |> List.filter (fun (_, set) -> set.Mode <> MintermSearchMode.TSet)
-        |> List.map (fun (i, set) -> struct (i, set))
-        |> List.toArray
+    let mutable _weightedSets = [||]
 
     let _regexOverride =
         Optimizations.inferOverrideRegex _initialOptimizations _lengthLookup _cache R_canonical
+    
+    let mutable _selectedOptimization = StartSearchOptimization.Original
+    
+    // Calculate initial weights
+    do this.CalculatePrefixSetWeights()
+    
+    member this.StartSearchMode
+        with get () = _selectedOptimization
+        and set v = _selectedOptimization <- v
+        
+    member this.CalculatePrefixSetWeights(?weightsOption: IDictionary<char, float>) =
+        if _prefixLength = 0 then
+            _weightedSets <- [||]
+        else
+            _weightedSets <- _prefixSets
+                // Calculate weights
+                |> Array.mapi (fun i set ->
+                    let mintermSV = _cache.MintermSearchValues(set)
+                    match mintermSV.Mode with
+                    | MintermSearchMode.TSet -> (i, mintermSV, 100000.0)
+                    | MintermSearchMode.SearchValues ->
+                        let weight = match weightsOption with
+                                        | None -> _commonalityScoreSimple (mintermSV.CharactersInMinterm.Value.Span.ToArray())
+                                        | Some weights -> _commonalityScore (mintermSV.CharactersInMinterm.Value.Span.ToArray(), weights)
+                        (i, mintermSV, weight)
+                    | MintermSearchMode.InvertedSearchValues -> (i, mintermSV, 10000.0)
+                    | _ -> failwith "impossible!")
+                // Sort by weight
+                |> Array.sortBy (fun (_, _, score) -> score)
+                // Throw away weights
+                |> Array.map (fun (i, set, _) -> (i, set))
+                // Filter out TSets, because they are slow to check
+                |> fun (sets: (int * MintermSearchValues<_>) array) ->
+                    let _, bestSetType = sets[0]
 
-    let mutable _doUseWeightedSkip = false
-
-    member this.DoUseWeightedSkip
-        with get () = _doUseWeightedSkip
-        and set (v) = _doUseWeightedSkip <- v
+                    if bestSetType.Mode = MintermSearchMode.TSet then
+                        sets[0..0]
+                    else
+                        sets |> Array.filter (fun (_, set) -> set.Mode <> MintermSearchMode.TSet)
+                // Convert to an array of struct tuples
+                |> Array.map (fun (i, set) -> struct (i, set))
+                
+    member this.CalculatePrefixSetWeightsFromJson(weights: string) =
+        this.CalculatePrefixSetWeights (_loadJsonCharFrequencies weights)
 
     member this.IsMatchRev(loc: byref<Location>) : bool =
         assert (loc.Position > -1)
@@ -1419,10 +1451,10 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         acc
 
     member this.TrySkipInitialRevChoose(loc: byref<Location>, currentStateId: byref<int>) =
-        if _doUseWeightedSkip then
-            this.TrySkipInitialRevWeighted &loc
-        else
-            this.TrySkipInitialRev(&loc, &currentStateId)
+        match _selectedOptimization with
+        | StartSearchOptimization.NoSkip -> false
+        | StartSearchOptimization.Original -> this.TrySkipInitialRev (&loc, &currentStateId)
+        | StartSearchOptimization.Weighted -> this.TrySkipInitialRevWeighted &loc
 
     member this.PrintAllDerivatives
         (
