@@ -661,9 +661,9 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
     let _prefixSets =
         match _initialOptimizations with
         | InitialOptimizations.SearchValuesPotentialStart(_, tsetPrefix) ->
-            tsetPrefix.ToArray()
+            tsetPrefix.ToArray() |> Array.rev
         | InitialOptimizations.SearchValuesPrefix(_, tsetPrefix, _) ->
-            tsetPrefix.ToArray()
+            tsetPrefix.ToArray() |> Array.rev
         | InitialOptimizations.StringPrefix (charPrefix, _) ->
             charPrefix.ToArray() |> Array.map _cache.Classify
         | InitialOptimizations.StringPrefixCaseIgnore(_, _, charPrefix, _, _) ->
@@ -1251,7 +1251,6 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         let rarestSetMinterm = rarestCharSet.Minterm
         let mutable searching = true
         let mutable prevMatch = currentPosition
-        let mutable matchFound = false
 
         while searching do
             let nextMatch =
@@ -1305,7 +1304,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 loc.Position <- 0
             | outOfBounds -> prevMatch <- outOfBounds
 
-        matchFound
+        false // 'true' can create infinite loop
 
     member this.TrySkipActiveRev
         (

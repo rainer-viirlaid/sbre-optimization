@@ -13,14 +13,14 @@ open Sbre.Pat
 open Sbre.Types
 open System.Text.Json.Nodes
 open System.Buffers
-// let fullInput = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
+let fullInput = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
 // let fullInput = __SOURCE_DIRECTORY__ + "/data/sherlock.txt" |> System.IO.File.ReadAllText
-let fullInput = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
+// let fullInput = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
 
 let frequenciesJsonText = __SOURCE_DIRECTORY__ + "/data/charFreqWithControl.json"  |> System.IO.File.ReadAllText
 
 let testInput =
-                // "Lorem Huckleberry ipsum"
+                // "Lorem there have ipsum"
                 fullInput
                 // |> String.replicate 10
                 // |> String.replicate 100
@@ -103,44 +103,44 @@ let characterFreq = loadJsonCharFrequencies frequenciesJsonText
 
 [<MemoryDiagnoser(true)>]
 // [<ShortRunJob>]
-type PrefixCharsetSearch () as this =
+type PrefixCharsetSearch () =
 
-    // [<Params(
-    //     // Twain regexes
-    //     
-    //     // Patterns.WORD_END,
-    //     // Patterns.HAVE_THERE,
-    //     // Patterns.TWAIN,
-    //     // Patterns.TWAIN_CASEIGNORE,
-    //     // Patterns.AZ_SHING,
-    //     // Patterns.HUCK_SAW,
-    //     // Patterns.AQ_X,
-    //     // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
-    //     // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-    //     // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-    //     // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-    //     // Patterns.TOM_RIVER,
-    //     // Patterns.AZ_ING,
-    //     // Patterns.AZ_ING_SPACES,
-    //     // Patterns.AZ_AWYER_INN,
-    //     // Patterns.QUOTES
-    //     
-    //     // Sherlock regexes
-    //     
-    //     // Patterns.SHERLOCK,
-    //     // Patterns.SHERLOCK_CASEIGNORE,
-    //     // Patterns.WORD_END,
-    //     // Patterns.HAVE_THERE,
-    //     // Patterns.AZ_SHING,
-    //     // Patterns.AQ_X,
-    //     // Patterns.AZ_ING,
-    //     // Patterns.AZ_ING_SPACES,
-    //     // Patterns.QUOTES
-    // )>]
-    // member val rs: string = Patterns.URL with get, set
-    member val rs: string = Patterns.DATE with get, set
+    [<Params(
+        // Twain regexes
+        
+        Patterns.WORD_END,
+        Patterns.HAVE_THERE,
+        Patterns.TWAIN,
+        Patterns.TWAIN_CASEIGNORE,
+        Patterns.AZ_SHING,
+        Patterns.HUCK_SAW,
+        Patterns.AQ_X,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_RIVER,
+        Patterns.AZ_ING,
+        Patterns.AZ_ING_SPACES,
+        Patterns.AZ_AWYER_INN,
+        Patterns.QUOTES
+        
+        // Sherlock regexes
+        
+        // Patterns.SHERLOCK,
+        // Patterns.SHERLOCK_CASEIGNORE,
+        // Patterns.WORD_END,
+        // Patterns.HAVE_THERE,
+        // Patterns.AZ_SHING,
+        // Patterns.AQ_X,
+        // Patterns.AZ_ING,
+        // Patterns.AZ_ING_SPACES,
+        // Patterns.QUOTES
+    )>]
+    member val rs: string = Patterns.QUOTES with get, set
+    // member val rs: string = Patterns.SHERLOCK_CASEIGNORE with get, set
     
-    member val regex: Regex = Regex(Patterns.DATE) with get, set
+    member val regex: Regex = Regex("") with get, set
 
     [<GlobalSetup(Target = "IntegratedNoSkip")>]
     member this.NoSkipSetup() =
@@ -174,7 +174,7 @@ type PrefixCharsetSearch () as this =
         
         
     [<GlobalSetup(Target = "IntegratedWeightedFromFile")>]
-    member this.WeightedSimpleFromFile() =
+    member this.WeightedFromFileSetup() =
         this.regex <- Regex(this.rs)
         this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
         this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
@@ -184,12 +184,12 @@ type PrefixCharsetSearch () as this =
         this.regex.Count(testInput)
         
         
-    member this.testSet () =
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
+    member this.testSetup () =
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
         this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
         ()
         
-    member this.testGo () =
+    member this.testRun () =
         let c = this.regex.Count(testInput)
         ()
         
