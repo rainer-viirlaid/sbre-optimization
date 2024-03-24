@@ -1255,17 +1255,15 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         while searching do
             let nextMatch =
                 match rarestSetMode with
-                | MintermSearchMode.InvertedSearchValues ->
-                    textSpan.Slice(0, prevMatch).LastIndexOfAnyExcept(rarestSetSV)
                 | MintermSearchMode.SearchValues ->
                     textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestSetSV)
+                | MintermSearchMode.InvertedSearchValues ->
+                    textSpan.Slice(0, prevMatch).LastIndexOfAnyExcept(rarestSetSV)
                 | MintermSearchMode.TSet ->
                     let mutable newMatch = -1
                     let mutable i = prevMatch
-
                     while i > 0 do
                         i <- i - 1
-
                         if
                             _cache.Solver.elemOfSet (_cache.Classify(textSpan[i])) rarestSetMinterm
                         then
@@ -1281,23 +1279,21 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                  && curMatch - rarestCharSetIndex + _prefixLength <= currentPosition)
                 ->
                 let absMatchStart = curMatch - rarestCharSetIndex
-                let mutable fullMatch = true
                 let mutable i = 1
 
-                while fullMatch && i < charSetsCount do
+                while i < charSetsCount do
                     let struct (weightedSetIndex, weightedSet) =
                         _weightedSets[i]
 
                     if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
-                        fullMatch <- false
+                        i <- charSetsCount + 1
                     else
                         i <- i + 1
 
                 prevMatch <- absMatchStart + rarestCharSetIndex
 
-                if fullMatch && i = charSetsCount then
+                if i = charSetsCount then
                     searching <- false
-                    fullMatch <- true
                     loc.Position <- absMatchStart + _prefixLength
             | -1 ->
                 searching <- false

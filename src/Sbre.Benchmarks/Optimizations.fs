@@ -108,22 +108,22 @@ type PrefixCharsetSearch () =
     [<Params(
         // Twain regexes
         
-        Patterns.WORD_END,
-        Patterns.HAVE_THERE,
-        Patterns.TWAIN,
-        Patterns.TWAIN_CASEIGNORE,
-        Patterns.AZ_SHING,
-        Patterns.HUCK_SAW,
-        Patterns.AQ_X,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_RIVER,
-        Patterns.AZ_ING,
-        Patterns.AZ_ING_SPACES,
-        Patterns.AZ_AWYER_INN,
-        Patterns.QUOTES
+        // Patterns.WORD_END,
+        // Patterns.HAVE_THERE,
+        // Patterns.TWAIN,
+        // Patterns.TWAIN_CASEIGNORE,
+        // Patterns.AZ_SHING,
+        Patterns.HUCK_SAW
+        // Patterns.AQ_X,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_RIVER,
+        // Patterns.AZ_ING,
+        // Patterns.AZ_ING_SPACES,
+        // Patterns.AZ_AWYER_INN,
+        // Patterns.QUOTES
         
         // Sherlock regexes
         
@@ -137,7 +137,7 @@ type PrefixCharsetSearch () =
         // Patterns.AZ_ING_SPACES,
         // Patterns.QUOTES
     )>]
-    member val rs: string = Patterns.QUOTES with get, set
+    member val rs: string = Patterns.HUCK_SAW with get, set
     // member val rs: string = Patterns.SHERLOCK_CASEIGNORE with get, set
     
     member val regex: Regex = Regex("") with get, set
@@ -147,7 +147,7 @@ type PrefixCharsetSearch () =
         this.regex <- Regex(this.rs)
         this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.NoSkip
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.IntegratedNoSkip() =
         this.regex.Count(testInput)
 
@@ -157,7 +157,7 @@ type PrefixCharsetSearch () =
         this.regex <- Regex(this.rs)
         this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.IntegratedOriginal() =
         this.regex.Count(testInput)
         
@@ -168,7 +168,7 @@ type PrefixCharsetSearch () =
         this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
         this.regex.TSetMatcher.CalculatePrefixSetWeights()
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.IntegratedWeightedSimple() =
         this.regex.Count(testInput)
         
@@ -184,8 +184,11 @@ type PrefixCharsetSearch () =
         this.regex.Count(testInput)
         
         
+        
+        
     member this.testSetup () =
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
         this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
         ()
         

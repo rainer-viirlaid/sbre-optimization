@@ -79,14 +79,15 @@ open System
 
 let pref = Optimizations.PrefixCharsetSearch()
 
-pref.OriginalSetup()
-let c1 = pref.IntegratedOriginal()
-pref.WeightedFromFileSetup()
-let c2 = pref.IntegratedWeightedFromFile()
-let a = 1
+// pref.OriginalSetup()
+// let c1 = pref.IntegratedOriginal()
+// pref.WeightedFromFileSetup()
+// let c2 = pref.IntegratedWeightedFromFile()
+// let a = 1
 
-// pref.testSet()
-// pref.testGo()
+pref.testSetup()
+while true do
+    pref.testRun()
 
 
 // let pref = _06_MatchTests.``lookback 2``()
