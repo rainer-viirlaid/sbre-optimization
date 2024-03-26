@@ -78,6 +78,7 @@ open System
 // pref.FirstSetIndexOfChars()
 
 let pref = Optimizations.PrefixCharsetSearch()
+pref.testWhole()
 
 // pref.OriginalSetup()
 // let c1 = pref.IntegratedOriginal()
@@ -85,9 +86,9 @@ let pref = Optimizations.PrefixCharsetSearch()
 // let c2 = pref.IntegratedWeightedFromFile()
 // let a = 1
 
-pref.testSetup()
-while true do
-    pref.testRun()
+// pref.testSetup()
+// while true do
+//     pref.testRun()
 
 
 // let pref = _06_MatchTests.``lookback 2``()

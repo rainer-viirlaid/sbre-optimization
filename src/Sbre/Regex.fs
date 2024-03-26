@@ -674,7 +674,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 
     let _commonalityScoreSimple (charSet: char array) =
         charSet
-        |> Array.map (fun c -> if Char.IsAsciiLetterLower c then 10.0 else 0.0)
+        |> Array.map (fun c -> if Char.IsLower c then 1.0 else 0.0)
         |> Array.sum
         
     let _commonalityScore (charSet: char array, weights: IDictionary<char, float>) =
@@ -712,14 +712,16 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 |> Array.mapi (fun i set ->
                     let mintermSV = _cache.MintermSearchValues(set)
                     match mintermSV.Mode with
-                    | MintermSearchMode.TSet -> (i, mintermSV, 100000.0)
+                    // Vectorizable character set
                     | MintermSearchMode.SearchValues ->
                         let weight = match weightsOption with
                                         | None -> _commonalityScoreSimple (mintermSV.CharactersInMinterm.Value.Span.ToArray())
                                         | Some weights -> _commonalityScore (mintermSV.CharactersInMinterm.Value.Span.ToArray(), weights)
                         (i, mintermSV, weight)
-                    | MintermSearchMode.InvertedSearchValues -> (i, mintermSV, 10000.0)
-                    | _ -> failwith "impossible!")
+                    // Large character set, but can be vectorized
+                    | MintermSearchMode.InvertedSearchValues -> (i, mintermSV, (float) Single.MaxValue - 1.0)
+                    // Large character set, cannot be vectorized
+                    | MintermSearchMode.TSet -> (i, mintermSV, (float) Single.MaxValue))
                 // Sort by weight
                 |> Array.sortBy (fun (_, _, score) -> score)
                 // Throw away weights

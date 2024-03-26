@@ -108,22 +108,22 @@ type PrefixCharsetSearch () =
     [<Params(
         // Twain regexes
         
-        // Patterns.WORD_END,
-        // Patterns.HAVE_THERE,
-        // Patterns.TWAIN,
-        // Patterns.TWAIN_CASEIGNORE,
-        // Patterns.AZ_SHING,
-        Patterns.HUCK_SAW
-        // Patterns.AQ_X,
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.TOM_RIVER,
-        // Patterns.AZ_ING,
-        // Patterns.AZ_ING_SPACES,
-        // Patterns.AZ_AWYER_INN,
-        // Patterns.QUOTES
+        Patterns.WORD_END,
+        Patterns.HAVE_THERE,
+        Patterns.TWAIN,
+        Patterns.TWAIN_CASEIGNORE,
+        Patterns.AZ_SHING,
+        Patterns.HUCK_SAW,
+        Patterns.AQ_X,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_RIVER,
+        Patterns.AZ_ING,
+        Patterns.AZ_ING_SPACES,
+        Patterns.AZ_AWYER_INN,
+        Patterns.QUOTES
         
         // Sherlock regexes
         
@@ -137,7 +137,7 @@ type PrefixCharsetSearch () =
         // Patterns.AZ_ING_SPACES,
         // Patterns.QUOTES
     )>]
-    member val rs: string = Patterns.HUCK_SAW with get, set
+    member val rs: string = Patterns.AZ_SHING with get, set
     // member val rs: string = Patterns.SHERLOCK_CASEIGNORE with get, set
     
     member val regex: Regex = Regex("") with get, set
@@ -195,6 +195,35 @@ type PrefixCharsetSearch () =
     member this.testRun () =
         let c = this.regex.Count(testInput)
         ()
+        
+    member this.testWhole () =
+        // let regexes = [
+        //     Patterns.WORD_END
+        //     Patterns.HAVE_THERE
+        //     Patterns.TWAIN
+        //     Patterns.TWAIN_CASEIGNORE
+        //     Patterns.AZ_SHING
+        //     Patterns.HUCK_SAW
+        //     Patterns.AQ_X
+        //     Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
+        //     Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE
+        //     Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN
+        //     Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN
+        //     Patterns.TOM_RIVER
+        //     Patterns.AZ_ING
+        //     Patterns.AZ_ING_SPACES
+        //     Patterns.AZ_AWYER_INN
+        //     Patterns.QUOTES
+        // ]
+        this.regex <- Regex(Patterns.HUCK_SAW)
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
+        let c1 = this.regex.Count(testInput)
+        // this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
+        // let c2 = this.regex.Count(testInput)
+        // assert (c1 = c2)
+        ()
+            
+        
         
 
 
