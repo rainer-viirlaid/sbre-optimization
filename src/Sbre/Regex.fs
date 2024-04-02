@@ -693,6 +693,8 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 
     let _regexOverride =
         Optimizations.inferOverrideRegex _initialOptimizations _lengthLookup _cache R_canonical
+        
+    let mutable _matchesCount = 0
     
     let mutable _selectedOptimization = StartSearchOptimization.Original
     
@@ -721,7 +723,8 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                     // Large character set, but can be vectorized
                     | MintermSearchMode.InvertedSearchValues -> (i, mintermSV, (float) Single.MaxValue - 1.0)
                     // Large character set, cannot be vectorized
-                    | MintermSearchMode.TSet -> (i, mintermSV, (float) Single.MaxValue))
+                    | MintermSearchMode.TSet -> (i, mintermSV, (float) Single.MaxValue)
+                    | _ -> failwith "impossible!")
                 // Sort by weight
                 |> Array.sortBy (fun (_, _, score) -> score)
                 // Throw away weights
@@ -1247,9 +1250,14 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 
         let struct (rarestCharSetIndex, rarestCharSet) =
             _weightedSets[0]
+        // let rarestCharSetIndex = 0
+        let rarestCharSetIndex = 1
+        // let rarestCharSetIndex = 2
 
         let rarestSetMode = rarestCharSet.Mode
         let rarestSetSV = rarestCharSet.SearchValues
+        // let rarestSetSV = SearchValues.Create("SJIP".AsSpan())
+        // let rarestSetSV = SearchValues.Create("TFHS".AsSpan())
         let rarestSetMinterm = rarestCharSet.Minterm
         let mutable searching = true
         let mutable prevMatch = currentPosition
@@ -1258,7 +1266,10 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
             let nextMatch =
                 match rarestSetMode with
                 | MintermSearchMode.SearchValues ->
-                    textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestSetSV)
+                    // textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestSetSV)
+                    // textSpan.Slice(0, prevMatch).LastIndexOf("uck")
+                    // textSpan.Slice(0, prevMatch).LastIndexOf("ck")
+                    textSpan.Slice(0, prevMatch).LastIndexOf("nn")
                 | MintermSearchMode.InvertedSearchValues ->
                     textSpan.Slice(0, prevMatch).LastIndexOfAnyExcept(rarestSetSV)
                 | MintermSearchMode.TSet ->
@@ -1281,22 +1292,224 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                  && curMatch - rarestCharSetIndex + _prefixLength <= currentPosition)
                 ->
                 let absMatchStart = curMatch - rarestCharSetIndex
-                let mutable i = 1
-
-                while i < charSetsCount do
-                    let struct (weightedSetIndex, weightedSet) =
-                        _weightedSets[i]
-
-                    if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
-                        i <- charSetsCount + 1
-                    else
-                        i <- i + 1
-
+                
+                // Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty
+                
+                // Suffix
+                // match textSpan[curMatch] with
+                // | 'n' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "Irene Adler", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "John Watson", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'k' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "lock Holmes", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'M' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "or Moriarty", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'L' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "or Lestrade", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | _ -> failwith "Incorrect set"
+                
+                // Whole string
+                // match textSpan[curMatch] with
+                // | 'n' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "Irene Adler", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 11
+                //         _matchesCount <- _matchesCount + 1
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "John Watson", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 11
+                //         _matchesCount <- _matchesCount + 1
+                // | 'k' ->
+                //     if (absMatchStart - 4 >= 0 && MemoryExtensions.Equals(textSpan.Slice(absMatchStart - 4, 15), "Sherlock Holmes", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 15
+                //         _matchesCount <- _matchesCount + 1
+                // | 'M' ->
+                //     if (absMatchStart - 7 >= 0 && MemoryExtensions.Equals(textSpan.Slice(absMatchStart - 7, 18), "Professor Moriarty", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 18
+                //         _matchesCount <- _matchesCount + 1
+                // | 'L' ->
+                //     if (absMatchStart - 7 >= 0 && MemoryExtensions.Equals(textSpan.Slice(absMatchStart - 7, 18), "Inspector Lestrade", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 18
+                //         _matchesCount <- _matchesCount + 1
+                // | _ ->
+                //     failwith ("Incorrect set '" + textSpan[absMatchStart].ToString() + "' '" + rarestCharSetIndex.ToString() + "'")
+                
+                // Custom startset
+                // match textSpan[absMatchStart] with
+                // | 'I' ->
+                //     if (absMatchStart + 11 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "Irene Adler", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 11
+                //         _matchesCount <- _matchesCount + 1
+                //     if (absMatchStart + 18 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 18), "Inspector Lestrade", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 18
+                //         _matchesCount <- _matchesCount + 1
+                // | 'J' ->
+                //     if (absMatchStart + 11 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "John Watson", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 11
+                //         _matchesCount <- _matchesCount + 1
+                // | 'S' ->
+                //     if (absMatchStart + 15 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 15), "Sherlock Holmes", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 15
+                //         _matchesCount <- _matchesCount + 1
+                // | 'P' ->
+                //     if (absMatchStart + 18 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 18), "Professor Moriarty", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 18
+                //         _matchesCount <- _matchesCount + 1
+                // | _ -> failwith "Incorrect set"
+                
+                // Tom|Sawyer|Huckleberry|Finn
+                
+                // Suffix
+                // match textSpan[absMatchStart] with
+                // | 'T' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 3), "Tom", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'i' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 3), "inn", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'r' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 3), "rry", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'y' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 3), "yer", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | _ -> failwith "Incorrect set"
+                
+                // Whole word
+                // match textSpan[absMatchStart] with
+                // | 'T' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 3), "Tom", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'i' ->
+                //     if (absMatchStart - 1 > 0 && MemoryExtensions.Equals(textSpan.Slice(absMatchStart - 1, 4), "Finn", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'r' ->
+                //     if (absMatchStart - 8 > 0 && MemoryExtensions.Equals(textSpan.Slice(absMatchStart - 8, 11), "Huckleberry", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'y' ->
+                //     if (absMatchStart - 3 > 0 && MemoryExtensions.Equals(textSpan.Slice(absMatchStart - 3, 6), "Sawyer", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | _ -> failwith "Incorrect set"
+                
+                // Whole word alternate comparison - slower
+                // match textSpan[absMatchStart] with
+                // | 'T' ->
+                //     if (textSpan.Slice(absMatchStart, 3).IndexOf("Tom".AsSpan()) <> -1) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'i' ->
+                //     if (absMatchStart - 1 > 0 && textSpan.Slice(absMatchStart - 1, 4).IndexOf("Finn".AsSpan()) <> -1) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'r' ->
+                //     if (absMatchStart - 8 > 0 && textSpan.Slice(absMatchStart - 8, 11).IndexOf("Huckleberry".AsSpan()) <> -1) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | 'y' ->
+                //     if (absMatchStart - 3 > 0 && textSpan.Slice(absMatchStart - 3, 6).IndexOf("Sawyer".AsSpan()) <> -1) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + _prefixLength
+                //         _matchesCount <- _matchesCount + 1
+                // | _ -> failwith "Incorrect set"
+                
+                // Custom searchSet
+                // match textSpan[absMatchStart] with
+                // | 'T' ->
+                //     if (MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 3), "Tom", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 3
+                //         _matchesCount <- _matchesCount + 1
+                // | 'F' ->
+                //     if (absMatchStart + 4 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 4), "Finn", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 4
+                //         _matchesCount <- _matchesCount + 1
+                // | 'H' ->
+                //     if (absMatchStart + 11 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 11), "Huckleberry", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 11
+                //         _matchesCount <- _matchesCount + 1
+                // | 'S' ->
+                //     if (absMatchStart + 6 <= textSpan.Length && MemoryExtensions.Equals(textSpan.Slice(absMatchStart, 6), "Sawyer", StringComparison.Ordinal)) then
+                //         searching <- false
+                //         loc.Position <- absMatchStart + 6
+                //         _matchesCount <- _matchesCount + 1
+                // | _ -> failwith "Incorrect set"
+                
+                
+                
+                // searching <- true
+                         
                 prevMatch <- absMatchStart + rarestCharSetIndex
-
-                if i = charSetsCount then
-                    searching <- false
-                    loc.Position <- absMatchStart + _prefixLength
+                searching <- false
+                loc.Position <- absMatchStart + _prefixLength
+                
+                // if (prevMatch = 0) then
+                //     searching <- false
+                //     loc.Position <- 0
+                
+                
+                
+                // let mutable i = 1
+                //
+                // while i < charSetsCount do
+                //     let struct (weightedSetIndex, weightedSet) =
+                //         _weightedSets[i]
+                //
+                //     if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
+                //         i <- charSetsCount + 1
+                //     else
+                //         i <- i + 1
+                //
+                // prevMatch <- absMatchStart + rarestCharSetIndex
+                //
+                // if i = charSetsCount then
+                //     searching <- false
+                //     loc.Position <- absMatchStart + _prefixLength
+            
+            
             | -1 ->
                 searching <- false
                 loc.Position <- 0
@@ -1421,6 +1634,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         assert (loc.Reversed = true)
         let mutable looping = true
         let mutable currentStateId = DFA_TR_rev
+        _matchesCount <- 0
 
         while looping do
             let flags = _flagsArray[currentStateId]
@@ -1432,10 +1646,35 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 #if SKIP_ACTIVE
                 || (flags.CanSkip && this.TrySkipActiveRev(flags, &loc, &currentStateId, &acc))
 #endif
+                // || this.StringSkipExperimental(&loc, &currentStateId)
             then
                 ()
             else
 #endif
+
+            // if (MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 5, 6), "awyer ", StringComparison.Ordinal)) then
+            //     let debug1 = 1
+            //     ()
+            // if (MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 3, 4), "inn ", StringComparison.Ordinal)) then
+            //     let debug1 = 1
+            //     ()
+
+            // if (MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 14, 15), "Sherlock Holmes", StringComparison.Ordinal)) then
+            //     let debug1 = 1
+            //     ()
+            // if (MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 10, 11), "John Watson", StringComparison.Ordinal)) then
+            //     let debug1 = 1
+            //     ()
+            // if (MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 10, 11), "Irene Adler", StringComparison.Ordinal)) then
+            //     let debug1 = 1
+            //     ()
+            // if (MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 17, 18), "Inspector Lestrade", StringComparison.Ordinal)) then
+            //     let debug1 = 1
+            //     ()
+            // if (MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 17, 18), "Professor Moriarty", StringComparison.Ordinal)) then
+            //     let debug1 = 1
+            //     ()
+                
             if this.StateIsNullable(flags, &loc, currentStateId) then
                 this.HandleNullableRev(flags, &acc, loc, currentStateId)
 
@@ -1445,6 +1684,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
             else
                 looping <- false
 
+        // Console.WriteLine(_matchesCount)
         acc
 
     member this.TrySkipInitialRevChoose(loc: byref<Location>, currentStateId: byref<int>) =
@@ -1453,6 +1693,20 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         | StartSearchOptimization.Original -> this.TrySkipInitialRev (&loc, &currentStateId)
         | StartSearchOptimization.Weighted -> this.TrySkipInitialRevWeighted &loc
 
+    member this.StringSkipExperimental(loc: byref<Location>, currentStateId: byref<int>) =
+        if (_stateArray[10] = Unchecked.defaultof<MatchState<'t>>) then
+            false
+        elif (currentStateId = 4 && loc.Position - 5 >= 0 && MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 4, 4), "awye", StringComparison.Ordinal)) then
+            currentStateId <- 10
+            loc.Position <- loc.Position - 5
+            true
+        elif (currentStateId = 11 && loc.Position - 3 >= 0 && MemoryExtensions.Equals(loc.Input.Slice(loc.Position - 2, 2), "in", StringComparison.Ordinal)) then
+            currentStateId <- 10
+            loc.Position <- loc.Position - 3
+            true
+        else
+            false
+    
     member this.PrintAllDerivatives
         (
             acc: byref<SharedResizeArrayStruct<int>>,

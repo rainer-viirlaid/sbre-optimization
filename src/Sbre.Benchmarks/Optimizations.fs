@@ -83,10 +83,14 @@ module Patterns =
     let AZ_ING_SPACES = "\s[a-zA-Z]{0,12}ing\s"
 
     [<Literal>] // twain
-    let AZ_AWYER_INN = "([A-Za-z]awyer|[A-Za-z]inn)\s"
+    let AZ_AWYER_INN = @"([A-Za-z]awyer|[A-Za-z]inn)\s"
 
     [<Literal>] // twain
     let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
+
+    [<Literal>] // twain
+    // let HUCK_AZ = @"Huck[a-zA-Z]+"
+    let HUCK_AZ = @"H[a-zA-Z]ck[a-zA-Z]+"
 
 
 
@@ -108,26 +112,27 @@ type PrefixCharsetSearch () =
     [<Params(
         // Twain regexes
         
-        Patterns.WORD_END,
-        Patterns.HAVE_THERE,
-        Patterns.TWAIN,
-        Patterns.TWAIN_CASEIGNORE,
-        Patterns.AZ_SHING,
-        Patterns.HUCK_SAW,
-        Patterns.AQ_X,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_RIVER,
-        Patterns.AZ_ING,
-        Patterns.AZ_ING_SPACES,
-        Patterns.AZ_AWYER_INN,
-        Patterns.QUOTES
+        Patterns.WORD_END
+        // Patterns.HAVE_THERE,
+        // Patterns.TWAIN,
+        // Patterns.TWAIN_CASEIGNORE,
+        // Patterns.AZ_SHING,
+        // Patterns.HUCK_SAW,
+        // Patterns.AQ_X,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_RIVER,
+        // Patterns.AZ_ING,
+        // Patterns.AZ_ING_SPACES,
+        // Patterns.AZ_AWYER_INN
+        // Patterns.QUOTES
+        // Patterns.HUCK_AZ
         
         // Sherlock regexes
         
-        // Patterns.SHERLOCK,
+        // Patterns.SHERLOCK
         // Patterns.SHERLOCK_CASEIGNORE,
         // Patterns.WORD_END,
         // Patterns.HAVE_THERE,
@@ -137,7 +142,7 @@ type PrefixCharsetSearch () =
         // Patterns.AZ_ING_SPACES,
         // Patterns.QUOTES
     )>]
-    member val rs: string = Patterns.AZ_SHING with get, set
+    member val rs: string = Patterns.SHERLOCK with get, set
     // member val rs: string = Patterns.SHERLOCK_CASEIGNORE with get, set
     
     member val regex: Regex = Regex("") with get, set
@@ -212,12 +217,20 @@ type PrefixCharsetSearch () =
         //     Patterns.TOM_RIVER
         //     Patterns.AZ_ING
         //     Patterns.AZ_ING_SPACES
-        //     Patterns.AZ_AWYER_INN
+        // Patterns.AZ_AWYER_INN
         //     Patterns.QUOTES
         // ]
-        this.regex <- Regex(Patterns.HUCK_SAW)
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
+        // this.regex <- Regex(Patterns.TOM_SAWYER_HUCKLEBERRY_FINN)
+        // this.regex <- Regex(Patterns.TWAIN)
+        // this.regex <- Regex(Patterns.AZ_AWYER_INN)
+        // this.regex <- Regex(Patterns.HUCK_AZ)
+        this.regex <- Regex(Patterns.WORD_END)
+        // this.regex <- Regex(Patterns.TOM_RIVER)
+        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
+        this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
+        // while true do
         let c1 = this.regex.Count(testInput)
+            // ()
         // this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
         // let c2 = this.regex.Count(testInput)
         // assert (c1 = c2)
