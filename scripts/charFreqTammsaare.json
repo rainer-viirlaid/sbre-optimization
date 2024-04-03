@@ -1,0 +1,584 @@
+{
+  "characters": [
+    {
+      "character": " ",
+      "frequency": 15.092357
+    },
+    {
+      "character": "a",
+      "frequency": 10.357417
+    },
+    {
+      "character": "e",
+      "frequency": 8.496506
+    },
+    {
+      "character": "i",
+      "frequency": 7.473549
+    },
+    {
+      "character": "s",
+      "frequency": 7.100170
+    },
+    {
+      "character": "t",
+      "frequency": 5.323908
+    },
+    {
+      "character": "l",
+      "frequency": 4.677059
+    },
+    {
+      "character": "u",
+      "frequency": 4.592328
+    },
+    {
+      "character": "n",
+      "frequency": 3.883909
+    },
+    {
+      "character": "k",
+      "frequency": 3.642116
+    },
+    {
+      "character": "d",
+      "frequency": 3.148972
+    },
+    {
+      "character": "m",
+      "frequency": 2.945452
+    },
+    {
+      "character": "o",
+      "frequency": 2.120312
+    },
+    {
+      "character": "r",
+      "frequency": 2.115153
+    },
+    {
+      "character": ",",
+      "frequency": 1.794729
+    },
+    {
+      "character": "g",
+      "frequency": 1.723257
+    },
+    {
+      "character": "p",
+      "frequency": 1.375108
+    },
+    {
+      "character": "v",
+      "frequency": 1.359170
+    },
+    {
+      "character": "j",
+      "frequency": 1.264850
+    },
+    {
+      "character": "\u00E4",
+      "frequency": 1.223650
+    },
+    {
+      "character": "h",
+      "frequency": 1.207877
+    },
+    {
+      "character": "\u00F5",
+      "frequency": 1.153385
+    },
+    {
+      "character": ".",
+      "frequency": 0.984848
+    },
+    {
+      "character": "\r",
+      "frequency": 0.942888
+    },
+    {
+      "character": "\n",
+      "frequency": 0.942888
+    },
+    {
+      "character": "\u00FC",
+      "frequency": 0.795100
+    },
+    {
+      "character": "b",
+      "frequency": 0.581743
+    },
+    {
+      "character": "\u201E",
+      "frequency": 0.393615
+    },
+    {
+      "character": "\u201C",
+      "frequency": 0.393037
+    },
+    {
+      "character": "K",
+      "frequency": 0.227542
+    },
+    {
+      "character": "M",
+      "frequency": 0.222533
+    },
+    {
+      "character": "\u00F6",
+      "frequency": 0.210034
+    },
+    {
+      "character": "A",
+      "frequency": 0.209852
+    },
+    {
+      "character": "S",
+      "frequency": 0.176571
+    },
+    {
+      "character": "T",
+      "frequency": 0.158435
+    },
+    {
+      "character": "?",
+      "frequency": 0.158253
+    },
+    {
+      "character": "w",
+      "frequency": 0.151656
+    },
+    {
+      "character": "I",
+      "frequency": 0.150697
+    },
+    {
+      "character": "J",
+      "frequency": 0.148978
+    },
+    {
+      "character": "N",
+      "frequency": 0.111531
+    },
+    {
+      "character": "V",
+      "frequency": 0.101214
+    },
+    {
+      "character": ":",
+      "frequency": 0.099726
+    },
+    {
+      "character": "E",
+      "frequency": 0.092683
+    },
+    {
+      "character": "!",
+      "frequency": 0.084582
+    },
+    {
+      "character": "P",
+      "frequency": 0.082383
+    },
+    {
+      "character": "O",
+      "frequency": 0.080565
+    },
+    {
+      "character": "L",
+      "frequency": 0.045003
+    },
+    {
+      "character": "H",
+      "frequency": 0.035116
+    },
+    {
+      "character": "-",
+      "frequency": 0.034769
+    },
+    {
+      "character": "\u2014",
+      "frequency": 0.034190
+    },
+    {
+      "character": "R",
+      "frequency": 0.029991
+    },
+    {
+      "character": "U",
+      "frequency": 0.024667
+    },
+    {
+      "character": "\u2026",
+      "frequency": 0.024617
+    },
+    {
+      "character": "\u00AB",
+      "frequency": 0.017822
+    },
+    {
+      "character": "\u00BB",
+      "frequency": 0.017822
+    },
+    {
+      "character": ";",
+      "frequency": 0.015326
+    },
+    {
+      "character": "\u00DC",
+      "frequency": 0.014450
+    },
+    {
+      "character": "D",
+      "frequency": 0.010895
+    },
+    {
+      "character": "X",
+      "frequency": 0.010581
+    },
+    {
+      "character": "c",
+      "frequency": 0.009920
+    },
+    {
+      "character": "\u2013",
+      "frequency": 0.009539
+    },
+    {
+      "character": "\u00D5",
+      "frequency": 0.008531
+    },
+    {
+      "character": "\u0161",
+      "frequency": 0.007522
+    },
+    {
+      "character": "\u00C4",
+      "frequency": 0.007291
+    },
+    {
+      "character": "W",
+      "frequency": 0.006530
+    },
+    {
+      "character": ")",
+      "frequency": 0.006200
+    },
+    {
+      "character": "(",
+      "frequency": 0.006183
+    },
+    {
+      "character": "f",
+      "frequency": 0.005836
+    },
+    {
+      "character": "\u00B7",
+      "frequency": 0.004067
+    },
+    {
+      "character": "G",
+      "frequency": 0.003389
+    },
+    {
+      "character": "/",
+      "frequency": 0.003224
+    },
+    {
+      "character": "\u2019",
+      "frequency": 0.003125
+    },
+    {
+      "character": "B",
+      "frequency": 0.002860
+    },
+    {
+      "character": "y",
+      "frequency": 0.001984
+    },
+    {
+      "character": "2",
+      "frequency": 0.001819
+    },
+    {
+      "character": "*",
+      "frequency": 0.001719
+    },
+    {
+      "character": "1",
+      "frequency": 0.001604
+    },
+    {
+      "character": "\u00D6",
+      "frequency": 0.001306
+    },
+    {
+      "character": "3",
+      "frequency": 0.001223
+    },
+    {
+      "character": "C",
+      "frequency": 0.001223
+    },
+    {
+      "character": "z",
+      "frequency": 0.001223
+    },
+    {
+      "character": "[",
+      "frequency": 0.001124
+    },
+    {
+      "character": "]",
+      "frequency": 0.001124
+    },
+    {
+      "character": "\t",
+      "frequency": 0.000992
+    },
+    {
+      "character": "0",
+      "frequency": 0.000942
+    },
+    {
+      "character": "\u2191",
+      "frequency": 0.000909
+    },
+    {
+      "character": "\u2018",
+      "frequency": 0.000876
+    },
+    {
+      "character": "9",
+      "frequency": 0.000827
+    },
+    {
+      "character": "\u0027",
+      "frequency": 0.000827
+    },
+    {
+      "character": "\u017E",
+      "frequency": 0.000761
+    },
+    {
+      "character": "F",
+      "frequency": 0.000711
+    },
+    {
+      "character": "4",
+      "frequency": 0.000678
+    },
+    {
+      "character": "\u201A",
+      "frequency": 0.000529
+    },
+    {
+      "character": "x",
+      "frequency": 0.000479
+    },
+    {
+      "character": "%",
+      "frequency": 0.000446
+    },
+    {
+      "character": "\u273B",
+      "frequency": 0.000364
+    },
+    {
+      "character": "\u00AD",
+      "frequency": 0.000347
+    },
+    {
+      "character": "\u2003",
+      "frequency": 0.000347
+    },
+    {
+      "character": "7",
+      "frequency": 0.000314
+    },
+    {
+      "character": "5",
+      "frequency": 0.000281
+    },
+    {
+      "character": "8",
+      "frequency": 0.000231
+    },
+    {
+      "character": "\u201D",
+      "frequency": 0.000231
+    },
+    {
+      "character": "6",
+      "frequency": 0.000215
+    },
+    {
+      "character": "_",
+      "frequency": 0.000215
+    },
+    {
+      "character": "\u043D",
+      "frequency": 0.000182
+    },
+    {
+      "character": "\u043E",
+      "frequency": 0.000165
+    },
+    {
+      "character": "\u0160",
+      "frequency": 0.000165
+    },
+    {
+      "character": "\u0022",
+      "frequency": 0.000116
+    },
+    {
+      "character": "\u0441",
+      "frequency": 0.000099
+    },
+    {
+      "character": "\u044A",
+      "frequency": 0.000099
+    },
+    {
+      "character": "\u043A",
+      "frequency": 0.000099
+    },
+    {
+      "character": "\u0435",
+      "frequency": 0.000099
+    },
+    {
+      "character": "Z",
+      "frequency": 0.000066
+    },
+    {
+      "character": "\u0447",
+      "frequency": 0.000066
+    },
+    {
+      "character": "\u0438",
+      "frequency": 0.000066
+    },
+    {
+      "character": "\u0440",
+      "frequency": 0.000066
+    },
+    {
+      "character": "\u0443",
+      "frequency": 0.000050
+    },
+    {
+      "character": "\u0463",
+      "frequency": 0.000050
+    },
+    {
+      "character": "\u0430",
+      "frequency": 0.000050
+    },
+    {
+      "character": "\u043C",
+      "frequency": 0.000050
+    },
+    {
+      "character": "\u044B",
+      "frequency": 0.000050
+    },
+    {
+      "character": "\u044C",
+      "frequency": 0.000050
+    },
+    {
+      "character": "\u0439",
+      "frequency": 0.000033
+    },
+    {
+      "character": "\u043B",
+      "frequency": 0.000033
+    },
+    {
+      "character": "\u0432",
+      "frequency": 0.000033
+    },
+    {
+      "character": "\u0434",
+      "frequency": 0.000033
+    },
+    {
+      "character": "\u043F",
+      "frequency": 0.000033
+    },
+    {
+      "character": "q",
+      "frequency": 0.000033
+    },
+    {
+      "character": "\u00E9",
+      "frequency": 0.000017
+    },
+    {
+      "character": "|",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0421",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u044F",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0420",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0456",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0437",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0423",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0436",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0431",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0414",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0442",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u041D",
+      "frequency": 0.000017
+    },
+    {
+      "character": "{",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u00E7",
+      "frequency": 0.000017
+    },
+    {
+      "character": "Q",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0026",
+      "frequency": 0.000017
+    }
+  ]
+}
