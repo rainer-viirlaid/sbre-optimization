@@ -254,7 +254,117 @@ type RegexCache<
         //     failwith $"pos:{loc.Position}\n{loc.Input.ToString()}"
 
 
+    member this.TryNextStartsetLocationReversedWeighted
+        (
+            loc: inref<Location>,
+            weightedSets: struct (int * MintermSearchValues<'t>) array,
+            prefixLength: int
+        ) =
+        let textSpan = loc.Input
+        let currentPosition = loc.Position
+        let charSetsCount = weightedSets.Length
 
+        let struct (rarestCharSetIndex, rarestCharSet) =
+            weightedSets[0]
+
+        let rarestSetMode = rarestCharSet.Mode
+        let rarestSetSV = rarestCharSet.SearchValues
+        let rarestSetMinterm = rarestCharSet.Minterm
+        let mutable searching = true
+        let mutable prevMatch = currentPosition
+        let mutable result = ValueNone
+
+        while searching do
+            let nextMatch =
+                match rarestSetMode with
+                | MintermSearchMode.SearchValues ->
+                    textSpan.Slice(0, prevMatch).LastIndexOfAny(rarestSetSV)
+                | MintermSearchMode.InvertedSearchValues ->
+                    textSpan.Slice(0, prevMatch).LastIndexOfAnyExcept(rarestSetSV)
+                | MintermSearchMode.TSet ->
+                    let mutable newMatch = -1
+                    let mutable i = prevMatch
+                    while i > 0 do
+                        i <- i - 1
+                        if
+                            _solver.elemOfSet (this.Classify(textSpan[i])) rarestSetMinterm
+                        then
+                            newMatch <- i
+                            i <- 0
+
+                    newMatch
+                | _ -> failwith "invalid enum"
+
+            match nextMatch with
+            | curMatch when
+                (curMatch - rarestCharSetIndex >= 0
+                 && curMatch - rarestCharSetIndex + prefixLength <= currentPosition)
+                ->
+                let absMatchStart = curMatch - rarestCharSetIndex
+                let mutable i = 1
+
+                while i < charSetsCount do
+                    let struct (weightedSetIndex, weightedSet) =
+                        weightedSets[i]
+
+                    if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
+                        i <- charSetsCount + 1
+                    else
+                        i <- i + 1
+
+                prevMatch <- curMatch
+
+                if i = charSetsCount then
+                    searching <- false
+                    result <- ValueSome(absMatchStart + prefixLength)
+            | -1 ->
+                searching <- false
+            | outOfBounds -> prevMatch <- outOfBounds
+        result
+
+    member this.TryNextStartsetLocationReversedSubstring
+        (
+            loc: inref<Location>,
+            substring: Memory<char>,
+            matchStartOffset: int,
+            matchEndOffset: int,
+            remainingSets: struct (int * MintermSearchValues<'t>) array
+        ) =
+        let textSpan = loc.Input
+        let currentPosition = loc.Position
+        let charSetsCount = remainingSets.Length
+
+        let mutable searching = true
+        let mutable prevMatch = currentPosition
+        let mutable result = ValueNone
+
+        while searching do
+            match textSpan.Slice(0, prevMatch).LastIndexOf(substring.Span) with
+            | curMatch when
+                (curMatch - matchStartOffset >= 0
+                 && curMatch + matchEndOffset <= currentPosition)
+                ->
+                let absMatchStart = curMatch - matchStartOffset
+                let mutable i = 1
+
+                while i < charSetsCount do
+                    let struct (weightedSetIndex, weightedSet) =
+                        remainingSets[i]
+
+                    if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
+                        i <- charSetsCount + 1
+                    else
+                        i <- i + 1
+
+                prevMatch <- curMatch
+
+                if i = charSetsCount then
+                    searching <- false
+                    result <- ValueSome(curMatch + matchEndOffset + 1)
+            | -1 ->
+                searching <- false
+            | outOfBounds -> prevMatch <- outOfBounds
+        result
 
 
     member this.TryNextStartsetLocationArrayReversed

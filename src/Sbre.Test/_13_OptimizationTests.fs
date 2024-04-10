@@ -99,7 +99,8 @@ let ``calc potential start 1``() =
 
 [<Fact>]
 let ``initialOptimizations 01``() =
-    let optimizations = getInitOptimizations "Twain"
+    let availableOptimizations = getInitOptimizations "Twain"
+    let optimizations = availableOptimizations[StartSearchOptimization.StringEnd]
     match optimizations with
     | Optimizations.InitialOptimizations.StringPrefix(prefix, transitionNode) ->
         Assert.True(prefix.Length = 5)
@@ -118,7 +119,8 @@ let ``initialOptimizations 03``() =
 
 [<Fact>]
 let ``initialOptimizations 04``() =
-    let optimizations = getInitOptimizations "[a-z]shing"
+    let availableOptimizations = getInitOptimizations "[a-z]shing"
+    let optimizations = availableOptimizations[StartSearchOptimization.StringEnd]
     match optimizations with
     | Optimizations.InitialOptimizations.StringPrefix(prefix,_) ->
         Assert.Equal(5,prefix.Length)

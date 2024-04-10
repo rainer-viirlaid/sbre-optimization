@@ -107,12 +107,13 @@ let assertPotentialStart pattern expected =
         let loc = Pat.Location.getNonInitial()
         matcher.CreateDerivative(&loc, mt,node)
     )
-    let optimizations =
+    let availableOptimizations =
         Optimizations.findInitialOptimizations
             getder
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+    let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.ApproximateSets))
     match optimizations with
     | Optimizations.InitialOptimizations.SearchValuesPotentialStart(_,prefix) ->
         let prefixString = Optimizations.printPrefixSets matcher.Cache (prefix.ToArray() |> Seq.toList)
@@ -127,18 +128,24 @@ let assertPrefixLength pattern expected =
         let loc = Pat.Location.getNonInitial()
         matcher.CreateDerivative(&loc, mt,node)
     )
-    let optimizations =
+    let availableOptimizations =
         Optimizations.findInitialOptimizations
             getder
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
-    match optimizations with
-    | Optimizations.InitialOptimizations.SearchValuesPotentialStart(prefix,_) ->
-        Assert.Equal(expected, prefix.Length)
-    | Optimizations.InitialOptimizations.SearchValuesPrefix(prefix, _,_) ->
-        Assert.Equal(expected, prefix.Length)
-    | _ -> failwith $"invalid optimization result: {optimizations}"
+    if availableOptimizations.ContainsKey(Optimizations.StartSearchOptimization.ApproximateSets) then
+        match availableOptimizations[Optimizations.StartSearchOptimization.ApproximateSets] with
+        | Optimizations.InitialOptimizations.SearchValuesPotentialStart(prefix,_) ->
+            Assert.Equal(expected, prefix.Length)
+        | _ -> failwith "key has wrong value"
+    else if availableOptimizations.ContainsKey(Optimizations.StartSearchOptimization.ExactSets) then
+        match availableOptimizations[Optimizations.StartSearchOptimization.ExactSets] with
+        | Optimizations.InitialOptimizations.SearchValuesPrefix(prefix, _,_) ->
+            Assert.Equal(expected, prefix.Length)
+        | _ -> failwith "key has wrong value"
+    else
+        failwith $"invalid optimization results: {availableOptimizations}"
 
 
 let assertSetsPrefix pattern expected =
@@ -148,12 +155,13 @@ let assertSetsPrefix pattern expected =
         let loc = Pat.Location.getNonInitial()
         matcher.CreateDerivative(&loc, mt,node)
     )
-    let optimizations =
+    let availableOptimizations =
         Optimizations.findInitialOptimizations
             getder
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+    let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.ExactSets))
     match optimizations with
     | Optimizations.InitialOptimizations.SearchValuesPrefix(prefix, _, transId) ->
         let prefixString = Optimizations.printPrefixSets matcher.Cache (prefix.ToArray() |> Seq.map (fun v -> v.Minterm) |>  Seq.toList)
@@ -167,12 +175,13 @@ let assertStringPrefix pattern expected =
         let loc = Pat.Location.getNonInitial()
         matcher.CreateDerivative(&loc, mt,node)
     )
-    let optimizations =
+    let availableOptimizations =
         Optimizations.findInitialOptimizations
             getder
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+    let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.StringEnd))
     match optimizations with
     | Optimizations.InitialOptimizations.StringPrefix(prefix, transId) ->
         let prefixString = prefix.ToString()

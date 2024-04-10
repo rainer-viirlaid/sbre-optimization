@@ -19,17 +19,28 @@ type InitialOptimizations<'t> =
         prefix: Memory<char> *
         isAscii: bool *
         transitionNodeId: int
+    | StringInPotentialPrefix of prefixString: Memory<char> * matchStartOffset: int * matchEndOffset: int * prefix: struct (int * MintermSearchValues<'t>) array
     /// | StringPrefixCaseIgnore of engine:System.Text.RegularExpressions.Regex * transitionNodeId:int
     | SearchValuesPrefix of prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t> * transitionNodeId: int
     /// potential start prefix from searchvalues
     | SearchValuesPotentialStart of prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t>
-    /// just a single set like [ae]
+    | WeightedSearchValuesPrefix of weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int * transitionNodeId: int
+    | WeightedSearchValuesPotentialStart of weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int
+    | AlternationBestWeightedSet of specialSet: MintermSearchValues<'t> * branches: Dictionary<char, string array>
+    // just a single set like [ae]
     // | SinglePotentialStart of prefix: SearchValues<char> * inverted: bool
     
+    
 type StartSearchOptimization =
-    | NoSkip
-    | Original
-    | Weighted
+    | NoOptimization
+    | StringEnd
+    | StringEndCaseIgnore
+    | StringInside
+    | ExactSets
+    | ApproximateSets
+    | WeightedExactSets
+    | WeightedApproximateSets
+    | AlternationSpecialSet
 
 
 
@@ -359,17 +370,20 @@ let findInitialOptimizations
     (node: RegexNode<'t>)
     (trueStarredNode: RegexNode<'t>)
         =
+        // : Dictionary<'tset,RegexNode<'tset>> = Dictionary()
+        let availableOptimizations: Dictionary<StartSearchOptimization, InitialOptimizations<'t>> = Dictionary()
+        availableOptimizations.Add(StartSearchOptimization.NoOptimization, InitialOptimizations.NoOptimizations)
 #if NO_SKIP_LOOKAROUNDS
     if node.ContainsLookaround then
-        InitialOptimizations.NoOptimizations
+        availableOptimizations
     else
 #endif
-        match Optimizations.calcPrefixSets getNonInitialDerivative nodeToStateFlags c node with
-        | prefix when prefix.Length > 1 ->
+        let exactPrefix = Optimizations.calcPrefixSets getNonInitialDerivative nodeToStateFlags c node
+        if exactPrefix.Length > 1 then
             let mts = c.Minterms()
 
             let singleCharPrefixes =
-                prefix
+                exactPrefix
                 |> Seq.map (fun v ->
                     // negated set
                     if c.Solver.elemOfSet v mts[0] then
@@ -393,130 +407,155 @@ let findInitialOptimizations
                         getNonInitialDerivative
                         c
                         trueStarredNode
-                        (List.take singleCharPrefixes.Length prefix)
+                        (List.take singleCharPrefixes.Length exactPrefix)
 
-                InitialOptimizations.StringPrefix(singleCharPrefixes, nodeToId applied)
+                availableOptimizations.Add(StartSearchOptimization.StringEnd, InitialOptimizations.StringPrefix(singleCharPrefixes, nodeToId applied))
             else
+                let caseInsensitivePrefixes =
+                    exactPrefix
+                    |> Seq.map (fun v ->
+                        // negated set
+                        if c.Solver.elemOfSet v mts[0] then
+                            None
+                        else
+                            let chrs = c.MintermChars(v)
 
-            // let caseInsensitivePrefixes =
-            //     prefix
-            //     |> Seq.map (fun v ->
-            //         // negated set
-            //         if c.Solver.elemOfSet v mts[0] then
-            //             None
-            //         else
-            //             let chrs = c.MintermChars(v)
+                            chrs
+                            |> Option.bind (fun chrs ->
+                                if chrs.Length = 1 then
+                                    Some(chrs.Span[0])
+                                else
 
-            //             chrs
-            //             |> Option.bind (fun chrs ->
-            //                 if chrs.Length = 1 then
-            //                     Some(chrs.Span[0])
-            //                 else
+                                    let up c = Char.IsUpper c || Char.IsWhiteSpace c
+                                    let low c = Char.IsLower c || Char.IsWhiteSpace c
 
-            //                     let up c = Char.IsUpper c || Char.IsWhiteSpace c
-            //                     let low c = Char.IsLower c || Char.IsWhiteSpace c
+                                    if
+                                        (chrs.Length = 2)
+                                        && ((up chrs.Span[0] && low chrs.Span[1])
+                                            || (low chrs.Span[0] && up chrs.Span[1]))
+                                    then
+                                        Some(chrs.Span[0])
+                                    else
+                                        match chrs.Length with
+                                        | 3 ->
+                                            // TODO: unsure if there are any more caseinsensitive cases like this
+                                            match chrs.ToArray() with
+                                            | [| 'K'; 'k'; 'K' |] -> Some chrs.Span[0]
+                                            | _ -> None
+                                        | _ -> None
+                            )
+                    )
+                    |> Seq.takeWhile Option.isSome
+                    |> Seq.choose id
+                    |> Seq.rev
+                    |> Seq.toArray
+                    |> Memory
 
-            //                     if
-            //                         (chrs.Length = 2)
-            //                         && ((up chrs.Span[0] && low chrs.Span[1])
-            //                             || (low chrs.Span[0] && up chrs.Span[1]))
-            //                     then
-            //                         Some(chrs.Span[0])
-            //                     else
-            //                         match chrs.Length with
-            //                         | 3 ->
-            //                             // TODO: unsure if there are any more caseinsensitive cases like this
-            //                             match chrs.ToArray() with
-            //                             | [| 'K'; 'k'; 'K' |] -> Some chrs.Span[0]
-            //                             | _ -> None
-            //                         | _ -> None
-            //             )
-            //     )
-            //     |> Seq.takeWhile Option.isSome
-            //     |> Seq.choose id
-            //     |> Seq.rev
-            //     |> Seq.toArray
-            //     |> Memory
+                if caseInsensitivePrefixes.Length > 1 then
+                    let applied =
+                        Optimizations.applyPrefixSets
+                            getNonInitialDerivative
+                            c
+                            trueStarredNode
+                            (List.take caseInsensitivePrefixes.Length exactPrefix)
 
-            // if caseInsensitivePrefixes.Length > 1 then
-            //     let applied =
-            //         Optimizations.applyPrefixSets
-            //             getNonInitialDerivative
-            //             c
-            //             trueStarredNode
-            //             (List.take caseInsensitivePrefixes.Length prefix)
+                    let tailSet =
+                        exactPrefix |> List.head |> c.MintermSearchValues |> (fun v -> v.SearchValues)
 
-            //     let tailSet =
-            //         prefix |> List.head |> c.MintermSearchValues |> (fun v -> v.SearchValues)
+                    let headSet =
+                        exactPrefix |> List.last |> c.MintermSearchValues |> (fun v -> v.SearchValues)
 
-            //     let headSet =
-            //         prefix |> List.last |> c.MintermSearchValues |> (fun v -> v.SearchValues)
+                    let allAscii = caseInsensitivePrefixes |> Memory.forall Char.IsAscii
 
-            //     let allAscii = caseInsensitivePrefixes |> Memory.forall Char.IsAscii
+                    availableOptimizations.Add(StartSearchOptimization.StringEndCaseIgnore,
+                                               InitialOptimizations.StringPrefixCaseIgnore(
+                                                   headSet, tailSet, caseInsensitivePrefixes, allAscii, nodeToId applied))
+            
+            let applied = Optimizations.applyPrefixSets getNonInitialDerivative c trueStarredNode exactPrefix
 
-            //     InitialOptimizations.StringPrefixCaseIgnore(
-            //         headSet,
-            //         tailSet,
-            //         caseInsensitivePrefixes,
-            //         allAscii,
-            //         nodeToId applied
-            //     )
-            // else
-            if false then failwith "debug"
-            else
-                let applied =
-                    Optimizations.applyPrefixSets getNonInitialDerivative c trueStarredNode prefix
+            let searchPrefix = exactPrefix |> Seq.map c.MintermSearchValues |> Seq.toArray
+            availableOptimizations.Add(StartSearchOptimization.ExactSets, InitialOptimizations<'t>.SearchValuesPrefix(Memory(searchPrefix), Memory(Array.ofSeq exactPrefix), nodeToId applied))
+            
+            let weightedSets = reorderPrefixDefaultWeights (exactPrefix |> List.toArray |> Array.rev) c
+            availableOptimizations.Add(StartSearchOptimization.WeightedExactSets, InitialOptimizations.WeightedSearchValuesPrefix(weightedSets, exactPrefix.Length, nodeToId applied))
 
-                let searchPrefix = prefix |> Seq.map c.MintermSearchValues |> Seq.toArray
-                InitialOptimizations<'t>.SearchValuesPrefix(Memory(searchPrefix), Memory(Array.ofSeq prefix), nodeToId applied)
+        let approximatePrefix = Optimizations.calcPotentialMatchStart getNonInitialDerivative nodeToStateFlags c node
+        if approximatePrefix.Length > 0 then
+            // small sets
+            // let containsSmallSets =
+            //     potentialStart |> Seq.forall (fun v -> not (c.MintermIsInverted(v)))
+            //     && potentialStart
+            //        |> Seq.forall (fun v ->
+            //            let chrs = c.MintermChars(v)
+            //            chrs.IsSome && chrs.Value.Length <= 5
+            //        )
+            // if containsSmallSets then
+            //     let searchPrefix =
+            //         potentialStart |> Seq.map c.MintermSearchValues |> Seq.toArray
+            //     InitialOptimizations.SearchValuesPotentialStart(searchPrefix, mem)
 
-        | _ ->
-            match
-                Optimizations.calcPotentialMatchStart
-                    getNonInitialDerivative
-                    nodeToStateFlags
-                    c
-                    node
-            with
-            | potentialStart when potentialStart.Length > 0 ->
-
-                // small sets
-                // let containsSmallSets =
-                //     potentialStart |> Seq.forall (fun v -> not (c.MintermIsInverted(v)))
-                //     && potentialStart
-                //        |> Seq.forall (fun v ->
-                //            let chrs = c.MintermChars(v)
-                //            chrs.IsSome && chrs.Value.Length <= 5
-                //        )
-                let searchPrefix = potentialStart |> Seq.map c.MintermSearchValues |> Seq.toArray |> Memory
-                InitialOptimizations.SearchValuesPotentialStart(searchPrefix, Memory(Seq.toArray potentialStart))
-                // if containsSmallSets then
-                //     let searchPrefix =
-                //         potentialStart |> Seq.map c.MintermSearchValues |> Seq.toArray
-                //     InitialOptimizations.SearchValuesPotentialStart(searchPrefix, mem)
-
-                    // if
-                    //     searchPrefix |> Seq.exists (fun v -> v.Mode = MintermSearchMode.TSet)
-                    //     || searchPrefix.Length < 3
-                    // then
-                    //     // default
-                    //     let mem = Memory(potentialStart |> Seq.toArray)
-                    //     InitialOptimizations.SetsPotentialStart(mem)
-                    // else
-                    //     // only small sets, allocate searchvalues
-                    //     let searchPrefix =
-                    //         searchPrefix
-                    //         |> Seq.map (fun v -> v.SearchValues)
-                    //         |> Seq.toArray
-                    //         |> Memory
-                    //
-                    //     let mem = Memory(potentialStart |> Seq.toArray)
-                    //     InitialOptimizations.SearchValuesPotentialStart(searchPrefix, mem)
-                // else
+                // if
+                //     searchPrefix |> Seq.exists (fun v -> v.Mode = MintermSearchMode.TSet)
+                //     || searchPrefix.Length < 3
+                // then
                 //     // default
                 //     let mem = Memory(potentialStart |> Seq.toArray)
                 //     InitialOptimizations.SetsPotentialStart(mem)
-            | _ -> InitialOptimizations.NoOptimizations
+                // else
+                //     // only small sets, allocate searchvalues
+                //     let searchPrefix =
+                //         searchPrefix
+                //         |> Seq.map (fun v -> v.SearchValues)
+                //         |> Seq.toArray
+                //         |> Memory
+                //
+                //     let mem = Memory(potentialStart |> Seq.toArray)
+                //     InitialOptimizations.SearchValuesPotentialStart(searchPrefix, mem)
+            // else
+            //     // default
+            //     let mem = Memory(potentialStart |> Seq.toArray)
+            //     InitialOptimizations.SetsPotentialStart(mem)
+            
+            let searchPrefix = approximatePrefix |> Seq.map c.MintermSearchValues |> Seq.toArray |> Memory
+            availableOptimizations.Add(StartSearchOptimization.ApproximateSets, InitialOptimizations.SearchValuesPotentialStart(searchPrefix, Memory(Seq.toArray approximatePrefix)))
+            
+            let weightedSets = reorderPrefixDefaultWeights (approximatePrefix |> List.toArray |> Array.rev) c
+            availableOptimizations.Add(StartSearchOptimization.WeightedApproximateSets, InitialOptimizations.WeightedSearchValuesPotentialStart(weightedSets, approximatePrefix.Length))
+            
+            let mutable potentialStrings: List<string * int> = List()
+            let mutable searchStr = ""
+            for i in 0..searchPrefix.Length - 1 do
+                let charsOpt = c.MintermChars(approximatePrefix[i])
+                match charsOpt with
+                | None ->
+                    if (searchStr <> "") then
+                        potentialStrings.Add(searchStr, i - 1)
+                    searchStr <- ""
+                | Some chars ->
+                    match (chars.Length, searchStr) with
+                    | 1, _ ->
+                        searchStr <- chars.Span[0].ToString() + searchStr
+                    | _, "" -> ()
+                    | _, _ ->
+                        potentialStrings.Add(searchStr, i - 1)
+                        searchStr <- ""
+            if (searchStr <> "") then
+                potentialStrings.Add(searchStr, searchPrefix.Length - 1)
+            
+            if (potentialStrings.Count <> 0) then
+                let selectedStr, matchEndOffset = potentialStrings |> Seq.reduce (fun (s1, o1) (s2, o2) ->
+                    if s1.Length > s2.Length then (s1, o1) else (s2, o2))
+                let remainingSets = searchPrefix.ToArray() |> Array.rev |> Array.mapi (fun i charSet ->
+                    let min = searchPrefix.Length - matchEndOffset - 1
+                    let max = min + selectedStr.Length - 1
+                    if i < min || i > max then Some(struct (i, charSet)) else None)
+                                    |> Array.choose id
+                let matchStartOffset = remainingSets.Length - (matchEndOffset - selectedStr.Length + 1)
+                
+                availableOptimizations.Add(StartSearchOptimization.StringInside, InitialOptimizations.StringInPotentialPrefix(selectedStr.ToCharArray().AsMemory(), matchStartOffset, matchEndOffset, remainingSets))
+            
+            ()
+        availableOptimizations
 
 
 let tryGetLimitedSkip
@@ -1009,3 +1048,64 @@ let inferOverrideRegex
             ->
             Some(OverrideRegex.FixedLengthString(prefix))
         | _ -> None
+
+
+
+let calculateSimpleWeight (charSet: char array) =
+    charSet
+    |> Array.map (fun c -> if Char.IsLower c then 1.0 else 0.0)
+    |> Array.sum
+    
+let calculateWeightFromPreset (charSet: char array, weights: IDictionary<char, float>) =
+    charSet |> Array.map (fun c ->
+        if weights.ContainsKey(c) then weights.Item c
+        else 0)
+    |> Array.sum
+
+let reorderPrefix
+    (hasWeights: bool)
+    (weights: IDictionary<char, float>)
+    (prefix: 't array)
+    (c: RegexCache<'t>): struct (int * MintermSearchValues<'t>) array =
+    if prefix.Length = 0 then
+        [||]
+    else
+        prefix
+            // Calculate weights
+            |> Array.mapi (fun i set ->
+                let mintermSV = c.MintermSearchValues(set)
+                match mintermSV.Mode with
+                // Vectorizable character set
+                | MintermSearchMode.SearchValues ->
+                    let setWeight =
+                        if hasWeights then
+                            calculateWeightFromPreset (mintermSV.CharactersInMinterm.Value.Span.ToArray(), weights)
+                        else
+                            calculateSimpleWeight (mintermSV.CharactersInMinterm.Value.Span.ToArray())
+                    (i, mintermSV, setWeight)
+                // Large character set, but can be vectorized
+                | MintermSearchMode.InvertedSearchValues -> (i, mintermSV, (float) Single.MaxValue - 1.0)
+                // Large character set, cannot be vectorized
+                | MintermSearchMode.TSet -> (i, mintermSV, (float) Single.MaxValue)
+                | _ -> failwith "invalid enum")
+            // Sort by weight
+            |> Array.sortBy (fun (_, _, score) -> score)
+            // Throw away weights
+            |> Array.map (fun (i, set, _) -> (i, set))
+            // Filter out TSets, because they are slow to check
+            |> fun (sets: (int * MintermSearchValues<_>) array) ->
+                let _, bestSetType = sets[0]
+                if bestSetType.Mode = MintermSearchMode.TSet then
+                    sets[0..0]
+                else
+                    sets |> Array.filter (fun (_, set) -> set.Mode <> MintermSearchMode.TSet)
+            // Convert to an array of struct tuples
+            |> Array.map (fun (i, set) -> struct (i, set))
+
+let reorderPrefixCustomWeights<'t when 't: struct and 't :> IEquatable<'t> and 't: equality> :
+    (IDictionary<char, float> -> 't array -> RegexCache<'t> -> struct (int * MintermSearchValues<'t>) array) =
+    reorderPrefix true
+
+let reorderPrefixDefaultWeights<'t when 't: struct and 't :> IEquatable<'t> and 't: equality> :
+    ('t array -> RegexCache<'t> -> struct (int * MintermSearchValues<'t>) array) =
+    reorderPrefix false (Dictionary())

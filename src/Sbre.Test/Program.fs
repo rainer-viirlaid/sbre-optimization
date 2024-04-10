@@ -3,6 +3,7 @@
 module Program
 
 open System
+open System.Buffers
 open System.Globalization
 open Sbre
 open Sbre.Benchmarks
@@ -76,6 +77,12 @@ open System
 
 // let pref = Optimizations.Prefix2()
 // pref.FirstSetIndexOfChars()
+
+// let words = [|
+//     "wasd"
+//     "qwes"
+// |]
+// let strSV = SearchValues.Create(words, StringComparison.Ordinal)
 
 let pref = Optimizations.PrefixCharsetSearch()
 pref.testWhole()

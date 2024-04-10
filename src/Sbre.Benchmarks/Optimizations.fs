@@ -88,6 +88,9 @@ module Patterns =
     [<Literal>] // twain
     let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
 
+    [<Literal>] // twain
+    let HUCK_AZ = @"Huck[A-Za-z]"
+
 
 
 let loadJsonCharFrequencies (jsonText: string) =
@@ -108,21 +111,21 @@ type PrefixCharsetSearch () =
     [<Params(
         // Twain regexes
         
-        Patterns.WORD_END,
-        Patterns.HAVE_THERE,
-        Patterns.TWAIN,
-        Patterns.TWAIN_CASEIGNORE,
-        Patterns.AZ_SHING,
-        Patterns.HUCK_SAW,
-        Patterns.AQ_X,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_RIVER,
-        Patterns.AZ_ING,
+        // Patterns.WORD_END,
+        // Patterns.HAVE_THERE,
+        // Patterns.TWAIN,
+        // Patterns.TWAIN_CASEIGNORE,
+        // Patterns.AZ_SHING,
+        // Patterns.HUCK_SAW,
+        // Patterns.AQ_X,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_RIVER,
+        // Patterns.AZ_ING,
         Patterns.AZ_ING_SPACES,
-        Patterns.AZ_AWYER_INN,
+        // Patterns.AZ_AWYER_INN,
         Patterns.QUOTES
         
         // Sherlock regexes
@@ -142,45 +145,66 @@ type PrefixCharsetSearch () =
     
     member val regex: Regex = Regex("") with get, set
 
-    [<GlobalSetup(Target = "IntegratedNoSkip")>]
+    [<GlobalSetup(Target = "NoSkip")>]
     member this.NoSkipSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.NoSkip
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.NoOptimization)
 
     // [<Benchmark>]
-    member this.IntegratedNoSkip() =
+    member this.NoSkip() =
         this.regex.Count(testInput)
 
     
-    [<GlobalSetup(Target = "IntegratedOriginal")>]
-    member this.OriginalSetup() =
+    [<GlobalSetup(Target = "SetsSuffix")>]
+    member this.SetsSuffixSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ExactSets)
 
     // [<Benchmark>]
-    member this.IntegratedOriginal() =
+    member this.SetsSuffix() =
         this.regex.Count(testInput)
         
         
-    [<GlobalSetup(Target = "IntegratedWeightedSimple")>]
-    member this.WeightedSimpleSetup() =
+    [<GlobalSetup(Target = "WeightedSetsSimple")>]
+    member this.WeightedSetsSimpleSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
-        this.regex.TSetMatcher.CalculatePrefixSetWeights()
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
 
     // [<Benchmark>]
-    member this.IntegratedWeightedSimple() =
+    member this.WeightedSetsSimple() =
         this.regex.Count(testInput)
         
         
-    [<GlobalSetup(Target = "IntegratedWeightedFromFile")>]
-    member this.WeightedFromFileSetup() =
+    [<GlobalSetup(Target = "WeightedSetsFromFile")>]
+    member this.WeightedSetsFromFileSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
-        this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
+
+    // [<Benchmark>]
+    member this.WeightedSetsFromFile() =
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "Exact")>]
+    member this.ExactSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ExactSets)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
 
     [<Benchmark>]
-    member this.IntegratedWeightedFromFile() =
+    member this.Exact() =
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "Approximate")>]
+    member this.ApproximateSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
+
+    [<Benchmark>]
+    member this.Approximate() =
         this.regex.Count(testInput)
         
         
@@ -188,8 +212,8 @@ type PrefixCharsetSearch () =
         
     member this.testSetup () =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Weighted
-        this.regex.TSetMatcher.CalculatePrefixSetWeights(characterFreq)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
         ()
         
     member this.testRun () =
@@ -215,9 +239,25 @@ type PrefixCharsetSearch () =
         //     Patterns.AZ_AWYER_INN
         //     Patterns.QUOTES
         // ]
-        this.regex <- Regex(Patterns.HUCK_SAW)
-        this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
-        let c1 = this.regex.Count(testInput)
+        // for regexStr in regexes do
+        //     let regexOld = Regex(regexStr)
+        //     regexOld.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
+        //     let c1 = regexOld.Count(testInput)
+        //     let regexNew = Regex(regexStr)
+        //     regexNew.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+        //     let c2 = regexOld.Count(testInput)
+        //     assert (c1 = c2)
+        
+        
+        this.regex <- Regex(@"H[A-Za-z]ck[A-Za-z]")
+        // this.regex <- Regex(@"(?i)ips")
+        // this.regex <- Regex(@"[""'][^""']{0,30}[?!\.][""']")
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
+        // let c1 = this.regex.Count(testInput) // 97
+        let c1 = this.regex.Count("Lorem Huckle dolor")
+        
+        
         // this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
         // let c2 = this.regex.Count(testInput)
         // assert (c1 = c2)
