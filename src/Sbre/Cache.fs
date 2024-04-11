@@ -322,6 +322,7 @@ type RegexCache<
             | outOfBounds -> prevMatch <- outOfBounds
         result
 
+    
     member this.TryNextStartsetLocationReversedSubstring
         (
             loc: inref<Location>,
@@ -345,7 +346,7 @@ type RegexCache<
                  && curMatch + matchEndOffset <= currentPosition)
                 ->
                 let absMatchStart = curMatch - matchStartOffset
-                let mutable i = 1
+                let mutable i = 0
 
                 while i < charSetsCount do
                     let struct (weightedSetIndex, weightedSet) =
@@ -364,6 +365,44 @@ type RegexCache<
             | -1 ->
                 searching <- false
             | outOfBounds -> prevMatch <- outOfBounds
+        result
+
+    
+    member this.TryNextStartsetLocationReversedAlternation
+        (
+            loc: inref<Location>,
+            specialSet: inref<SearchValues<char>>,
+            branches: Dictionary<char, (string * int * int) array>
+        ) =
+        let textSpan = loc.Input
+        let currentPosition = loc.Position
+
+        let mutable searching = true
+        let mutable prevMatch = currentPosition
+        let mutable result = ValueNone
+
+        while searching do
+            match textSpan.Slice(0, prevMatch).LastIndexOfAny(specialSet) with
+            | -1 ->
+                searching <- false
+            | curMatch ->
+                let mutable fullMatch = -1
+                for branchStr, startOffset, endOffset in branches[textSpan[curMatch]] do
+                    if fullMatch < curMatch + endOffset &&
+                       curMatch - startOffset >= 0 &&
+                       curMatch + endOffset <= currentPosition &&
+                       MemoryExtensions.Equals(
+                           textSpan.Slice(curMatch - startOffset, startOffset + endOffset),
+                           branchStr,
+                           StringComparison.Ordinal) then
+                           fullMatch <- curMatch + endOffset
+                    ()
+
+                prevMatch <- curMatch
+
+                if fullMatch <> -1 then
+                    searching <- false
+                    result <- ValueSome(fullMatch)
         result
 
 

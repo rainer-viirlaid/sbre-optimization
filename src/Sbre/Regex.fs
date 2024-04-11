@@ -79,7 +79,7 @@ type RegexSearchMode =
 
 [<Sealed>]
 type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
-    (uncanonicalizedNode: RegexNode<'t>, _cache: RegexCache<'t>, options: SbreOptions) as this =
+    (uncanonicalizedNode: RegexNode<'t>, _cache: RegexCache<'t>, options: SbreOptions) =
     inherit GenericRegexMatcher()
 
     let InitialDfaStateCapacity =
@@ -626,7 +626,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 
 
 #if OPTIMIZE
-    let _availableInitialOptimizations =
+    let mutable _availableInitialOptimizations =
         findInitialOptimizations
             (fun (mt, node) ->
                 let mutable loc = Location.getNonInitial ()
@@ -669,8 +669,8 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
             | InitialOptimizations.WeightedSearchValuesPrefix(weightedPrefix, l, n) -> 
                 let newSets = reorderPrefixCustomWeights
                                   weights (weightedPrefix |> Array.map (fun struct (_, sv) -> sv.Minterm)) _cache
-                _availableInitialOptimizations[StartSearchOptimization.WeightedExactSets] =
-                    InitialOptimizations.WeightedSearchValuesPrefix(newSets, l, n) |> ignore
+                _availableInitialOptimizations[StartSearchOptimization.WeightedExactSets] <-
+                    InitialOptimizations.WeightedSearchValuesPrefix(newSets, l, n)
             | _ -> ()
             
         if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.WeightedApproximateSets) then
@@ -678,13 +678,22 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
             | InitialOptimizations.WeightedSearchValuesPotentialStart(weightedPrefix, l) -> 
                 let newSets = reorderPrefixCustomWeights
                                   weights (weightedPrefix |> Array.map (fun struct (_, sv) -> sv.Minterm)) _cache
-                _availableInitialOptimizations[StartSearchOptimization.WeightedApproximateSets] =
-                    InitialOptimizations.WeightedSearchValuesPotentialStart(newSets, l) |> ignore
+                _availableInitialOptimizations[StartSearchOptimization.WeightedApproximateSets] <-
+                    InitialOptimizations.WeightedSearchValuesPotentialStart(newSets, l)
+            | _ -> ()
+        
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.AlternationSpecialSet) then
+            match _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] with
+            | InitialOptimizations.AlternationBestWeightedSet(_, charToBranches) ->
+                let branchStrings = charToBranches.Values |> Array.concat |> Array.map (fun (s, _, _) -> s)
+                let newOpt = recalculateAlternationInitialOptimization branchStrings weights
+                _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] <- newOpt
             | _ -> ()
 
         match _initialOptimization with
         | InitialOptimizations.WeightedSearchValuesPrefix _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedExactSets)
         | InitialOptimizations.WeightedSearchValuesPotentialStart _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+        | InitialOptimizations.AlternationBestWeightedSet _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         | _ -> ()
 
     member this.IsMatchRev(loc: byref<Location>) : bool =
@@ -1081,7 +1090,18 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 // no matches remaining
                 loc.Position <- Location.final loc
                 false
-        | InitialOptimizations.AlternationBestWeightedSet _ -> failwith "TODO"
+        | InitialOptimizations.AlternationBestWeightedSet(rarestChars, charToBranches) ->
+            let skipResult =
+                _cache.TryNextStartsetLocationReversedAlternation(&loc, &rarestChars, charToBranches)
+
+            match skipResult with
+            | ValueSome resultEnd ->
+                loc.Position <- resultEnd
+                false
+            | ValueNone ->
+                // no matches remaining
+                loc.Position <- Location.final loc
+                false
         | InitialOptimizations.StringInPotentialPrefix(prefixString, matchStartOffset, matchEndOffset, remainingSets) -> 
             let skipResult =
                 _cache.TryNextStartsetLocationReversedSubstring(&loc, prefixString, matchStartOffset, matchEndOffset, remainingSets)

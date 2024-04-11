@@ -91,6 +91,12 @@ module Patterns =
     [<Literal>] // twain
     let HUCK_AZ = @"Huck[A-Za-z]"
 
+    [<Literal>] // twain
+    let AZ_UCK_AZ = @"[A-Za-z]uck[A-Za-z]"
+
+    [<Literal>] // twain
+    let H_AZ_CK_AZ = @"H[A-Za-z]ck[A-Za-z]"
+
 
 
 let loadJsonCharFrequencies (jsonText: string) =
@@ -118,7 +124,7 @@ type PrefixCharsetSearch () =
         // Patterns.AZ_SHING,
         // Patterns.HUCK_SAW,
         // Patterns.AQ_X,
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
         // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
         // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
         // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
@@ -127,10 +133,13 @@ type PrefixCharsetSearch () =
         Patterns.AZ_ING_SPACES,
         // Patterns.AZ_AWYER_INN,
         Patterns.QUOTES
+        // Patterns.HUCK_AZ,
+        // Patterns.AZ_UCK_AZ,
+        // Patterns.H_AZ_CK_AZ
         
         // Sherlock regexes
         
-        // Patterns.SHERLOCK,
+        // Patterns.SHERLOCK
         // Patterns.SHERLOCK_CASEIGNORE,
         // Patterns.WORD_END,
         // Patterns.HAVE_THERE,
@@ -208,6 +217,48 @@ type PrefixCharsetSearch () =
         this.regex.Count(testInput)
         
         
+    [<GlobalSetup(Target = "ApproximateSets")>]
+    member this.ApproximateSetsSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
+
+    // [<Benchmark>]
+    member this.ApproximateSets() =
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "WeightedApproxSets")>]
+    member this.WeightedApproxSetsSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
+
+    // [<Benchmark>]
+    member this.WeightedApproxSets() =
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "AlternationSpecialSet")>]
+    member this.AlternationSpecialSetSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
+
+    // [<Benchmark>]
+    member this.AlternationSpecialSet() =
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "StringInside")>]
+    member this.StringInsideSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.StringInside)
+
+    // [<Benchmark>]
+    member this.StringInside() =
+        this.regex.Count(testInput)
+        
+        
         
         
     member this.testSetup () =
@@ -249,13 +300,18 @@ type PrefixCharsetSearch () =
         //     assert (c1 = c2)
         
         
-        this.regex <- Regex(@"H[A-Za-z]ck[A-Za-z]")
-        // this.regex <- Regex(@"(?i)ips")
-        // this.regex <- Regex(@"[""'][^""']{0,30}[?!\.][""']")
+        this.regex <- Regex(Patterns.QUOTES)
+        // this.regex <- Regex(@"Huck[A-Za-z]")
+        // this.regex <- Regex(@"[A-Za-z]uck[A-Za-z]")
+        // this.regex <- Regex(@"H[A-Za-z]ck[A-Za-z]")
+        // this.regex <- Regex(@"Tom|Sawyer|Huckleberry|Finn")
+        // this.regex <- Regex(@"Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty")
         this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-        // let c1 = this.regex.Count(testInput) // 97
-        let c1 = this.regex.Count("Lorem Huckle dolor")
+        // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.StringInside)
+        // this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
+        let c1 = this.regex.Count(testInput)
+        // let c1 = this.regex.Count("Irene Adler")
+        // let c1 = this.regex.Count("John Watson")
         
         
         // this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
