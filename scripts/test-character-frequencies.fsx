@@ -6,32 +6,24 @@
 
 // open System.Collections.Generic
 open System
-open System.Buffers
 open System.Collections.Generic
 open System.Text.Json
 open System.Text.Json.Nodes
-open System.Text.Json.Serialization
-open System.Threading
 open Microsoft.FSharp.Core
-open Microsoft.VisualBasic.CompilerServices
-open Sbre
-open FSharp.Data
-open System.Globalization
-open Sbre.Types
-open Sbre.Pat
-open Sbre.Optimizations
 
 
-let findLetterFrequency (text: IEnumerable<char>) =
-    let counts = new Dictionary<char, int>()
-    text |> Seq.iter (fun (c: char) ->
-        if not (counts.ContainsKey(c)) then counts.Add(c, 1)
-        else counts.Item(c) <- (counts.Item(c) + 1)
+let findLetterFrequency (text: IEnumerable<char>, textSize: int, symbolCount: int) =
+    let counts = Dictionary<char, int>()
+    let step = (textSize - 1) / symbolCount
+    text |> Seq.iteri (fun i c ->
+        if i % step = 0 then
+            if not (counts.ContainsKey(c)) then counts.Add(c, 1)
+            else counts[c] <- (counts.Item(c) + 1)
         )
     counts
     
 let encodeChar (character: char) onlyBMP =
-    let code = (int) character
+    let code = int character
     if 55296 <= code && code <= 57343 then
         if not onlyBMP then
             $"\\u{code:x4}"
@@ -44,7 +36,7 @@ let writeCharFrequenciesToJsonFile (charCounts: Dictionary<char,int>) filename f
     let charFreqJsonArray =
         charCounts.Keys
         |> Seq.sortByDescending (fun (c: char) -> charCounts.Item(c))
-        |> Seq.map (fun (character) ->
+        |> Seq.map (fun character ->
             let count = charCounts.Item(character)
             let charString = encodeChar character onlyBMP
             if charString <> "" then
@@ -62,31 +54,34 @@ let writeCharFrequenciesToJsonFile (charCounts: Dictionary<char,int>) filename f
         System.IO.File.WriteAllText(filename, fullJson)
     ()
     
+    
+// Calculating weights
 
-let tammsaare = __SOURCE_DIRECTORY__ + "/samples/Tammsaare Kollektsioon.txt" |> System.IO.File.ReadAllText
-let freqs = findLetterFrequency (tammsaare)
-printfn "%A" freqs
-writeCharFrequenciesToJsonFile freqs (__SOURCE_DIRECTORY__ + "/charFreqTammsaare.json") tammsaare.Length true
+let tammsaare = (__SOURCE_DIRECTORY__ + "/samples/Tammsaare Kollektsioon.txt" |> System.IO.File.ReadAllText)
+let symbolCount = 100000
+let freqs = findLetterFrequency (tammsaare, tammsaare.Length, symbolCount)
+writeCharFrequenciesToJsonFile freqs (__SOURCE_DIRECTORY__ + "/charFreqTammsaare-" + symbolCount.ToString() + ".json") symbolCount true
 
 
 let vikipeedia = "" |> System.IO.File.ReadAllText
-let freqsV = findLetterFrequency (vikipeedia)
+let freqsV = findLetterFrequency (vikipeedia, 0, 0)
 writeCharFrequenciesToJsonFile freqsV (__SOURCE_DIRECTORY__ + "/charFreqVikipeedia.json") vikipeedia.Length true
 
 
 let sherlock = __SOURCE_DIRECTORY__ + "/sherlock.txt" |> System.IO.File.ReadAllText
-let freqsS = findLetterFrequency (sherlock)
+let freqsS = findLetterFrequency (sherlock, 0, 0)
 writeCharFrequenciesToJsonFile freqsS (__SOURCE_DIRECTORY__ + "/charFreqSherlock.json") sherlock.Length true
 
 
 let wikipedia1 = "" |> System.IO.File.ReadAllText
-let freqsW1 = findLetterFrequency (wikipedia1)
+let freqsW1 = findLetterFrequency (wikipedia1, 0, 0)
 writeCharFrequenciesToJsonFile freqsW1 (__SOURCE_DIRECTORY__ + "/charFreqWikipedia1.json") wikipedia1.Length true
 
 
-let wikipedia9 = "" |> System.IO.File.ReadAllText
-let freqsW9 = findLetterFrequency (wikipedia9)
-writeCharFrequenciesToJsonFile freqsW9 (__SOURCE_DIRECTORY__ + "/charFreqWikipedia9.json") wikipedia9.Length true
+let wikipedia9 = "C:\\Users\\Name\\Documents\\TalTech\\Loputoo\\Wikipedia\\Wikipedia EN 9.txt" |> System.IO.File.ReadAllText
+let symbolCount = 100000
+let freqsW9 = findLetterFrequency (wikipedia9, wikipedia9.Length, symbolCount)
+writeCharFrequenciesToJsonFile freqsW9 (__SOURCE_DIRECTORY__ + "/charFreqWikipedia9-" + symbolCount.ToString() + ".json") symbolCount true
 
 
 
@@ -120,7 +115,7 @@ let convertJsonToCsv inputFile outputFile =
     System.IO.File.WriteAllText(outputFile, csvStr)
 
 
-convertJsonToCsv (__SOURCE_DIRECTORY__ + "/charFreqWikipedia9.json") (__SOURCE_DIRECTORY__ + "/charFreqWikipedia9.csv")
+convertJsonToCsv (__SOURCE_DIRECTORY__ + "/charFreqTammsaare-100000.json") (__SOURCE_DIRECTORY__ + "/charFreqTammsaare-100000.csv")
 
 
 // Get all symbols
@@ -134,15 +129,69 @@ let findAllChars () =
         __SOURCE_DIRECTORY__ + "/charFreqWikipedia1.json"
         __SOURCE_DIRECTORY__ + "/charFreqWikipedia9.json"
     |]
-    let charsSet = new HashSet<char>()
+    let charsSet = HashSet<char>()
     for inputFile in weightFiles do
         let freqJson = inputFile |> System.IO.File.ReadAllText
         let freqDict = loadJsonCharFrequencies freqJson
-        let charSeq = freqDict |> Seq.map (fun pair -> pair.Key)
+        let charSeq = freqDict |> Seq.map (_.Key)
         for character in charSeq do
             charsSet.Add(character) |> ignore
-    let csvStr = "Character\n" + String.Join("\n", charsSet |> Seq.map (fun character -> charToCsvString character))
+    let csvStr = "Character\n" + String.Join("\n", charsSet |> Seq.map charToCsvString)
     let outputFile = __SOURCE_DIRECTORY__ + "/allChars.csv"
     System.IO.File.WriteAllText(outputFile, csvStr)
     
 findAllChars()
+
+
+
+// Combine multiple weight files into a CSV
+
+let combineIntoCsv (files: string array) (columnNames: string array) (outputFileName: string) =
+    let charsSet = HashSet<char>()
+    let columnSymbolWeights = Dictionary()
+    for i in 0..files.Length - 1 do
+        let freqJson = files[i] |> System.IO.File.ReadAllText
+        let freqDict = loadJsonCharFrequencies freqJson
+        columnSymbolWeights.Add(columnNames[i], freqDict)
+        let charSeq = freqDict |> Seq.map (_.Key)
+        for character in charSeq do
+            charsSet.Add(character) |> ignore
+    let mutable csvStr = "Character;" + String.Join(";", columnNames)
+    for character in charsSet do
+        csvStr <- csvStr + "\n" + charToCsvString character + ";" + String.Join(";", columnNames |> Seq.map (fun col ->
+            let weights = columnSymbolWeights[col]
+            if weights.ContainsKey(character) then
+                weights[character].ToString()
+            else
+                "0"
+            ))
+    let outputFile = __SOURCE_DIRECTORY__ + "/" + outputFileName
+    System.IO.File.WriteAllText(outputFile, csvStr)
+    
+    
+
+let columns = [|
+    "100 symbols"
+    "1000 symbols"
+    "10000 symbols"
+    "100000 symbols"
+    "All symbols"
+|]
+    
+let tammsaareWeights = [|
+    __SOURCE_DIRECTORY__ + "/charFreqTammsaare-100.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTammsaare-1000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTammsaare-10000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTammsaare-100000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTammsaare.json"
+|]
+    
+let wiki9Weights = [|
+    __SOURCE_DIRECTORY__ + "/charFreqWikipedia9-100.json"
+    __SOURCE_DIRECTORY__ + "/charFreqWikipedia9-1000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqWikipedia9-10000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqWikipedia9-100000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqWikipedia9.json"
+|]
+
+combineIntoCsv wiki9Weights columns "charFreqWikipedia9-combined.csv"

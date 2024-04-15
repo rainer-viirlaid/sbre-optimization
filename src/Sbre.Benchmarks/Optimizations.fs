@@ -1,5 +1,6 @@
 module Sbre.Benchmarks.Optimizations
 
+open System.Collections.Generic
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System.Runtime.Intrinsics
@@ -114,45 +115,54 @@ let characterFreq = loadJsonCharFrequencies frequenciesJsonText
 // [<ShortRunJob>]
 type PrefixCharsetSearch () =
 
-    [<Params(
-        // Twain regexes
-        
-        // Patterns.WORD_END,
-        // Patterns.HAVE_THERE,
-        // Patterns.TWAIN,
-        // Patterns.TWAIN_CASEIGNORE,
-        // Patterns.AZ_SHING,
-        // Patterns.HUCK_SAW,
-        // Patterns.AQ_X,
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.TOM_RIVER,
-        // Patterns.AZ_ING,
-        Patterns.AZ_ING_SPACES,
-        // Patterns.AZ_AWYER_INN,
-        Patterns.QUOTES
-        // Patterns.HUCK_AZ,
-        // Patterns.AZ_UCK_AZ,
-        // Patterns.H_AZ_CK_AZ
-        
-        // Sherlock regexes
-        
-        // Patterns.SHERLOCK
-        // Patterns.SHERLOCK_CASEIGNORE,
-        // Patterns.WORD_END,
-        // Patterns.HAVE_THERE,
-        // Patterns.AZ_SHING,
-        // Patterns.AQ_X,
-        // Patterns.AZ_ING,
-        // Patterns.AZ_ING_SPACES,
-        // Patterns.QUOTES
-    )>]
+    // [<Params(
+    //     // Twain regexes
+    //     
+    //     // Patterns.WORD_END,
+    //     // Patterns.HAVE_THERE,
+    //     // Patterns.TWAIN,
+    //     // Patterns.TWAIN_CASEIGNORE,
+    //     // Patterns.AZ_SHING,
+    //     // Patterns.HUCK_SAW,
+    //     // Patterns.AQ_X,
+    //     Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
+    //     // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+    //     // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+    //     // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+    //     // Patterns.TOM_RIVER,
+    //     // Patterns.AZ_ING,
+    //     // Patterns.AZ_ING_SPACES,
+    //     // Patterns.AZ_AWYER_INN,
+    //     // Patterns.QUOTES
+    //     // Patterns.HUCK_AZ,
+    //     // Patterns.AZ_UCK_AZ,
+    //     // Patterns.H_AZ_CK_AZ
+    //     
+    //     // Sherlock regexes
+    //     
+    //     // Patterns.SHERLOCK
+    //     // Patterns.SHERLOCK_CASEIGNORE,
+    //     // Patterns.WORD_END,
+    //     // Patterns.HAVE_THERE,
+    //     // Patterns.AZ_SHING,
+    //     // Patterns.AQ_X,
+    //     // Patterns.AZ_ING,
+    //     // Patterns.AZ_ING_SPACES,
+    //     // Patterns.QUOTES
+    // )>]
     member val rs: string = Patterns.AZ_SHING with get, set
-    // member val rs: string = Patterns.SHERLOCK_CASEIGNORE with get, set
+
+    [<Params(
+        100,
+        1000,
+        10000,
+        100000
+    )>]
+    member val symbolCount: int = 1 with get, set
     
     member val regex: Regex = Regex("") with get, set
+    
+    member val runtimeWeights: Dictionary<Char, int> = Dictionary() with get, set
 
     [<GlobalSetup(Target = "NoSkip")>]
     member this.NoSkipSetup() =
@@ -201,7 +211,7 @@ type PrefixCharsetSearch () =
         this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ExactSets)
         this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.Exact() =
         this.regex.Count(testInput)
         
@@ -212,7 +222,7 @@ type PrefixCharsetSearch () =
         this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
         this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.Approximate() =
         this.regex.Count(testInput)
         
@@ -238,14 +248,25 @@ type PrefixCharsetSearch () =
         this.regex.Count(testInput)
         
         
-    [<GlobalSetup(Target = "AlternationSpecialSet")>]
+    [<GlobalSetup(Target = "AlternationSpecialWeightedSet")>]
     member this.AlternationSpecialSetSetup() =
         this.regex <- Regex(this.rs)
         this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
 
     // [<Benchmark>]
-    member this.AlternationSpecialSet() =
+    member this.AlternationSpecialWeightedSet() =
+        this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "AlternationSpecialWeightedSetString")>]
+    member this.AlternationSpecialSetStringSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
+        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
+
+    // [<Benchmark>]
+    member this.AlternationSpecialWeightedSetString() =
         this.regex.Count(testInput)
         
         
@@ -257,6 +278,22 @@ type PrefixCharsetSearch () =
     // [<Benchmark>]
     member this.StringInside() =
         this.regex.Count(testInput)
+        
+        
+    [<GlobalSetup(Target = "CalculatingWeights")>]
+    member this.CalculatingWeightsSetup() =
+        this.runtimeWeights <- Dictionary()
+
+    [<Benchmark>]
+    member this.CalculatingWeights() =
+        let textSpan = testInput.AsSpan()
+        let step = (textSpan.Length - 1) / this.symbolCount
+        for i in 0..this.symbolCount do
+            let character = textSpan[i * step]
+            if not (this.runtimeWeights.ContainsKey(character)) then
+                this.runtimeWeights[character] <- 1
+            else
+                this.runtimeWeights[character] <- this.runtimeWeights[character] + 1
         
         
         
@@ -300,18 +337,21 @@ type PrefixCharsetSearch () =
         //     assert (c1 = c2)
         
         
-        this.regex <- Regex(Patterns.QUOTES)
+        // this.regex <- Regex(Patterns.TOM_SAWYER_HUCKLEBERRY_FINN)
         // this.regex <- Regex(@"Huck[A-Za-z]")
         // this.regex <- Regex(@"[A-Za-z]uck[A-Za-z]")
         // this.regex <- Regex(@"H[A-Za-z]ck[A-Za-z]")
         // this.regex <- Regex(@"Tom|Sawyer|Huckleberry|Finn")
         // this.regex <- Regex(@"Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty")
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
+        // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
+        // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
         // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.StringInside)
         // this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-        let c1 = this.regex.Count(testInput)
-        // let c1 = this.regex.Count("Irene Adler")
+        // let c1 = this.regex.Count(testInput)
+        let c1 = this.regex.Count("It's night or day.")
         // let c1 = this.regex.Count("John Watson")
+        this.CalculatingWeights()
         
         
         // this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original

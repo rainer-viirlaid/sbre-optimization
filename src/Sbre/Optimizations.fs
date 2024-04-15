@@ -26,7 +26,8 @@ type InitialOptimizations<'t> =
     | SearchValuesPotentialStart of prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t>
     | WeightedSearchValuesPrefix of weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int * transitionNodeId: int
     | WeightedSearchValuesPotentialStart of weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int
-    | AlternationBestWeightedSet of specialSet: SearchValues<char> * branches: Dictionary<char, (string * int * int) array>
+    | AlternationBestSet of specialSet: SearchValues<char> * branches: Dictionary<char, (struct (int * MintermSearchValues<'t>) array * int * int) array>
+    | AlternationBestSetStrings of specialSet: SearchValues<char> * branches: Dictionary<char, (string * int * int) array>
     // just a single set like [ae]
     // | SinglePotentialStart of prefix: SearchValues<char> * inverted: bool
     
@@ -41,6 +42,7 @@ type StartSearchOptimization =
     | WeightedExactSets
     | WeightedApproximateSets
     | AlternationSpecialSet
+    | AlternationSpecialSetStrings
 
 
 
@@ -559,7 +561,12 @@ let findInitialOptimizations
         match node with
             | RegexNode.Or _ ->
                 match calculateAlternationInitialOptimization c node (Dictionary()) with
-                | Some opt -> availableOptimizations.Add(StartSearchOptimization.AlternationSpecialSet, opt)
+                | Some opt ->
+                    availableOptimizations.Add(StartSearchOptimization.AlternationSpecialSet, opt)
+                | None -> ()
+                ()
+                match calculateAlternationInitialOptimizationStrings c node (Dictionary()) with
+                | Some opt -> availableOptimizations.Add(StartSearchOptimization.AlternationSpecialSetStrings, opt)
                 | None -> ()
                 ()
             | _ -> ()
@@ -1120,18 +1127,18 @@ let reorderPrefixDefaultWeights<'t when 't: struct and 't :> IEquatable<'t> and 
 
 
 
-let rec findAlternationBranches
+let rec findAlternationBranchesStrings
     (node: RegexNode<'t>)
     (c: RegexCache<'t>): string array =
     match node with
     | RegexNode.Or(nodes, _) ->
-        let strings = nodes |> Seq.map (fun n -> findAlternationBranches n c) |> Array.concat
+        let strings = nodes |> Seq.map (fun n -> findAlternationBranchesStrings n c) |> Array.concat
         if strings |> Array.contains "" then [| "" |] else strings
     | RegexNode.Concat(head, tail, _) ->
-        let headStrings = findAlternationBranches head c
-        let tailStrings = findAlternationBranches tail c
+        let headStrings = findAlternationBranchesStrings head c
+        let tailStrings = findAlternationBranchesStrings tail c
         if headStrings |> Array.contains "" then [| "" |]
-        else if headStrings.Length = 0 then tailStrings
+        else if headStrings.Length = 0 then [| "" |]
         else if tailStrings.Length = 0 then headStrings
         else Array.allPairs headStrings tailStrings |> Array.map (fun (s1, s2) -> s1 + s2)
     | RegexNode.Singleton charSet ->
@@ -1147,7 +1154,7 @@ let rec findAlternationBranches
                 [| "" |]
     | _ -> [| "" |]
 
-let calculateAlternationInitialOptimizationInner
+let calculateAlternationInitialOptimizationStringsInner
     (branches: char array seq)
     (weights: IDictionary<char, float>)
     (missingCharWeight: char -> float) =
@@ -1166,26 +1173,112 @@ let calculateAlternationInitialOptimizationInner
         |] |]) 
     rarestChars, charToBranches
     
-let calculateAlternationInitialOptimization
+let calculateAlternationInitialOptimizationStrings
     (c: RegexCache<'t>)
     (node: RegexNode<'t>)
     (weights: IDictionary<char, float>) =
-    let branches = findAlternationBranches node c |> Array.map (fun s -> String.Join("", s.ToCharArray() |> Array.rev))
+    let branches = findAlternationBranchesStrings node c |> Array.map (fun s -> String.Join("", s.ToCharArray() |> Array.rev))
     let possible = not (branches |> Array.contains "")
     if possible then
-        let rarestChars, charToBranches = calculateAlternationInitialOptimizationInner
+        let rarestChars, charToBranches = calculateAlternationInitialOptimizationStringsInner
                                               (branches |> Array.map (_.ToCharArray()))
                                               weights
                                               (fun c -> calculateSimpleWeight [| c |])
         let sv = SearchValues.Create(String.Join<char>("", rarestChars))
-        Some(InitialOptimizations.AlternationBestWeightedSet(sv, charToBranches))
+        Some(InitialOptimizations.AlternationBestSetStrings(sv, charToBranches))
     else
         None
+    
+
+
+let rec findAlternationBranches
+    (node: RegexNode<'t>)
+    (c: RegexCache<'t>): 't array array =
+    match node with
+    | RegexNode.Or(nodes, _) ->
+        let tStringArrays = nodes |> Seq.map (fun n -> findAlternationBranches n c)
+        let impossible = tStringArrays
+                         |> Seq.map (fun tStringArray -> tStringArray = [||])
+                         |> Seq.contains true
+        if impossible then
+            [||]
+        else
+            tStringArrays |> Array.concat
+    | RegexNode.Concat(head, tail, _) ->
+        let headStrings = findAlternationBranches head c
+        let tailStrings = findAlternationBranches tail c
+        if headStrings.Length = 0 then [||]
+        else if tailStrings.Length = 0 then headStrings
+        else Array.allPairs headStrings tailStrings
+             |> Array.map (fun (s1, s2) -> Array.concat [| s1; s2 |])
+    | RegexNode.Singleton charSet ->
+        let mts = c.Minterms()
+        if c.Solver.elemOfSet charSet mts[0] then
+            [||]
+        else
+            [| [| charSet |] |]
+    | _ -> [||]
+
+let calculateAlternationInitialOptimizationSetsInner
+    (c: RegexCache<'t>)
+    (branches: 't array seq)
+    (weights: IDictionary<char, float>) =
+    let mutable rarestChars = HashSet()
+    let mutable charSetToBranches = Dictionary()
+    let mutable setTooBig = false
+    for branch in branches do
+        let weightedSets = reorderPrefix
+                               (weights.Count <> 0)
+                               weights
+                               branch
+                               c
+        if weightedSets.Length = 0 then
+            setTooBig <- true
+        else
+            let struct (rarestCharSetIndex, rarestCharSet) = weightedSets[0]
+            if rarestCharSet.Mode <> MintermSearchMode.SearchValues then
+                setTooBig <- true
+            else
+                match rarestCharSet.CharactersInMinterm with
+                | Some chars ->
+                    for character in chars.ToArray() do
+                        rarestChars.Add(character) |> ignore
+                        if not (charSetToBranches.ContainsKey(character)) then
+                            charSetToBranches.Add(character, [||])
+                        charSetToBranches[character] <- (Array.concat [| charSetToBranches[character] ; [|
+                            (weightedSets, rarestCharSetIndex, branch.Length - rarestCharSetIndex)
+                        |] |])
+                | _ -> setTooBig <- true
+    if setTooBig then
+        HashSet(), Dictionary()
+    else
+        rarestChars, charSetToBranches
+    
+let calculateAlternationInitialOptimization
+    (c: RegexCache<'t>)
+    (node: RegexNode<'t>)
+    (weights: IDictionary<char, float>) =
+    let branches = findAlternationBranches node c |> Array.map (fun s -> s |> Array.rev)
+    let possible = branches <> [||]
+    if possible then
+        let rarestChars, charToBranches = calculateAlternationInitialOptimizationSetsInner
+                                              c
+                                              branches
+                                              weights
+        if rarestChars.Count <> 0 then
+            let sv = SearchValues.Create(String.Join<char>("", rarestChars))
+            Some(InitialOptimizations.AlternationBestSet(sv, charToBranches))
+        else
+            None
+    else
+        None
+
+
 
 let recalculateAlternationInitialOptimization
     (branchStrings: string seq)
     (weights: IDictionary<char, float>) =
     let branches = branchStrings |> Seq.map (_.ToCharArray())
-    let rarestChars, charToBranches = calculateAlternationInitialOptimizationInner branches weights (fun _ -> 0.0)
+    let rarestChars, charToBranches = calculateAlternationInitialOptimizationStringsInner branches weights (fun _ -> 0.0)
     let sv = SearchValues.Create(String.Join<char>("", rarestChars))
-    InitialOptimizations.AlternationBestWeightedSet(sv, charToBranches)
+    InitialOptimizations.AlternationBestSetStrings(sv, charToBranches)

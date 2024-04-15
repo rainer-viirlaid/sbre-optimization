@@ -372,6 +372,49 @@ type RegexCache<
         (
             loc: inref<Location>,
             specialSet: inref<SearchValues<char>>,
+            branches: Dictionary<char, (struct (int * MintermSearchValues<'t>) array * int * int) array>
+        ) =
+        let textSpan = loc.Input
+        let currentPosition = loc.Position
+
+        let mutable searching = true
+        let mutable prevMatch = currentPosition
+        let mutable result = ValueNone
+
+        while searching do
+            match textSpan.Slice(0, prevMatch).LastIndexOfAny(specialSet) with
+            | -1 ->
+                searching <- false
+            | curMatch ->
+                let mutable fullMatch = -1
+                for branchCharSets, startOffset, endOffset in branches[textSpan[curMatch]] do
+                    let absMatchStart = curMatch - startOffset
+                    if fullMatch < curMatch + endOffset && 0 <= absMatchStart && curMatch + endOffset <= currentPosition then
+                        let mutable i = 1
+                        while i < branchCharSets.Length do
+                            let struct (weightedSetIndex, weightedSet) =
+                                branchCharSets[i]
+
+                            if not (weightedSet.Contains(textSpan[absMatchStart + weightedSetIndex])) then
+                                i <- branchCharSets.Length + 1
+                            else
+                                i <- i + 1
+                        if i = branchCharSets.Length then
+                           fullMatch <- curMatch + endOffset
+                    ()
+
+                prevMatch <- curMatch
+
+                if fullMatch <> -1 then
+                    searching <- false
+                    result <- ValueSome(fullMatch)
+        result
+
+    
+    member this.TryNextStartsetLocationReversedAlternationStrings
+        (
+            loc: inref<Location>,
+            specialSet: inref<SearchValues<char>>,
             branches: Dictionary<char, (string * int * int) array>
         ) =
         let textSpan = loc.Input

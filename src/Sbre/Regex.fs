@@ -684,16 +684,25 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         
         if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.AlternationSpecialSet) then
             match _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] with
-            | InitialOptimizations.AlternationBestWeightedSet(_, charToBranches) ->
-                let branchStrings = charToBranches.Values |> Array.concat |> Array.map (fun (s, _, _) -> s)
-                let newOpt = recalculateAlternationInitialOptimization branchStrings weights
-                _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] <- newOpt
+            | InitialOptimizations.AlternationBestSet _ ->
+                match calculateAlternationInitialOptimization _cache reverseNode weights with
+                | Some optimization -> _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] <- optimization
+                | None -> ()
+            | _ -> ()
+        
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.AlternationSpecialSetStrings) then
+            match _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSetStrings] with
+            | InitialOptimizations.AlternationBestSetStrings _ ->
+                match calculateAlternationInitialOptimizationStrings _cache reverseNode weights with
+                | Some optimization -> _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSetStrings] <- optimization
+                | None -> ()
             | _ -> ()
 
         match _initialOptimization with
         | InitialOptimizations.WeightedSearchValuesPrefix _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedExactSets)
         | InitialOptimizations.WeightedSearchValuesPotentialStart _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
-        | InitialOptimizations.AlternationBestWeightedSet _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        | InitialOptimizations.AlternationBestSet _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        | InitialOptimizations.AlternationBestSetStrings _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
         | _ -> ()
 
     member this.IsMatchRev(loc: byref<Location>) : bool =
@@ -1090,9 +1099,21 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 // no matches remaining
                 loc.Position <- Location.final loc
                 false
-        | InitialOptimizations.AlternationBestWeightedSet(rarestChars, charToBranches) ->
+        | InitialOptimizations.AlternationBestSet(rarestCharsSV, charToBranches) ->
             let skipResult =
-                _cache.TryNextStartsetLocationReversedAlternation(&loc, &rarestChars, charToBranches)
+                _cache.TryNextStartsetLocationReversedAlternation(&loc, &rarestCharsSV, charToBranches)
+
+            match skipResult with
+            | ValueSome resultEnd ->
+                loc.Position <- resultEnd
+                false
+            | ValueNone ->
+                // no matches remaining
+                loc.Position <- Location.final loc
+                false
+        | InitialOptimizations.AlternationBestSetStrings(rarestChars, charToBranches) ->
+            let skipResult =
+                _cache.TryNextStartsetLocationReversedAlternationStrings(&loc, &rarestChars, charToBranches)
 
             match skipResult with
             | ValueSome resultEnd ->

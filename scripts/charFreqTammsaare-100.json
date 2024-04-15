@@ -1,0 +1,96 @@
+{
+  "characters": [
+    {
+      "character": " ",
+      "frequency": 21.000000
+    },
+    {
+      "character": "s",
+      "frequency": 11.000000
+    },
+    {
+      "character": "a",
+      "frequency": 9.000000
+    },
+    {
+      "character": "l",
+      "frequency": 9.000000
+    },
+    {
+      "character": "e",
+      "frequency": 7.000000
+    },
+    {
+      "character": "d",
+      "frequency": 5.000000
+    },
+    {
+      "character": "m",
+      "frequency": 4.000000
+    },
+    {
+      "character": "k",
+      "frequency": 4.000000
+    },
+    {
+      "character": "t",
+      "frequency": 4.000000
+    },
+    {
+      "character": "v",
+      "frequency": 4.000000
+    },
+    {
+      "character": ",",
+      "frequency": 3.000000
+    },
+    {
+      "character": "o",
+      "frequency": 3.000000
+    },
+    {
+      "character": "i",
+      "frequency": 3.000000
+    },
+    {
+      "character": "p",
+      "frequency": 2.000000
+    },
+    {
+      "character": "u",
+      "frequency": 2.000000
+    },
+    {
+      "character": "n",
+      "frequency": 2.000000
+    },
+    {
+      "character": "\u00E4",
+      "frequency": 2.000000
+    },
+    {
+      "character": "P",
+      "frequency": 1.000000
+    },
+    {
+      "character": "\u00F5",
+      "frequency": 1.000000
+    },
+    {
+      "character": "h",
+      "frequency": 1.000000
+    },
+    {
+      "character": "G",
+      "frequency": 1.000000
+    },
+    {
+      "character": "r",
+      "frequency": 1.000000
+    },
+    {
+      "character": "j",
+      "frequency": 1.000000
+    }
+  ]
+}
