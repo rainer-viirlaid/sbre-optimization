@@ -42,7 +42,7 @@ type StartSearchOptimization =
     | WeightedExactSets
     | WeightedApproximateSets
     | AlternationSpecialSet
-    | AlternationSpecialSetStrings
+    // | AlternationSpecialSetStrings
 
 
 
@@ -371,6 +371,7 @@ let findInitialOptimizations
     (c: RegexCache<'t>)
     (node: RegexNode<'t>)
     (trueStarredNode: RegexNode<'t>)
+    (characterWeights: IDictionary<Char, float>)
         =
         // : Dictionary<'tset,RegexNode<'tset>> = Dictionary()
         let availableOptimizations: Dictionary<StartSearchOptimization, InitialOptimizations<'t>> = Dictionary()
@@ -478,7 +479,7 @@ let findInitialOptimizations
             let searchPrefix = exactPrefix |> Seq.map c.MintermSearchValues |> Seq.toArray
             availableOptimizations.Add(StartSearchOptimization.ExactSets, InitialOptimizations<'t>.SearchValuesPrefix(Memory(searchPrefix), Memory(Array.ofSeq exactPrefix), nodeToId applied))
             
-            let weightedSets = reorderPrefixDefaultWeights (exactPrefix |> List.toArray |> Array.rev) c
+            let weightedSets = reorderPrefixCustomWeights characterWeights (exactPrefix |> List.toArray |> Array.rev) c
             availableOptimizations.Add(StartSearchOptimization.WeightedExactSets, InitialOptimizations.WeightedSearchValuesPrefix(weightedSets, exactPrefix.Length, nodeToId applied))
 
         let approximatePrefix = Optimizations.calcPotentialMatchStart getNonInitialDerivative nodeToStateFlags c node
@@ -521,7 +522,7 @@ let findInitialOptimizations
             let searchPrefix = approximatePrefix |> Seq.map c.MintermSearchValues |> Seq.toArray |> Memory
             availableOptimizations.Add(StartSearchOptimization.ApproximateSets, InitialOptimizations.SearchValuesPotentialStart(searchPrefix, Memory(Seq.toArray approximatePrefix)))
             
-            let weightedSets = reorderPrefixDefaultWeights (approximatePrefix |> List.toArray |> Array.rev) c
+            let weightedSets = reorderPrefixCustomWeights characterWeights (approximatePrefix |> List.toArray |> Array.rev) c
             availableOptimizations.Add(StartSearchOptimization.WeightedApproximateSets, InitialOptimizations.WeightedSearchValuesPotentialStart(weightedSets, approximatePrefix.Length))
             
             let mutable potentialStrings: List<string * int> = List()
@@ -559,16 +560,16 @@ let findInitialOptimizations
             ()
          
         match node with
-            | RegexNode.Or _ ->
-                match calculateAlternationInitialOptimization c node (Dictionary()) with
+            | RegexNode.Or _ | RegexNode.Concat _ ->
+                match calculateAlternationInitialOptimization c node characterWeights with
                 | Some opt ->
                     availableOptimizations.Add(StartSearchOptimization.AlternationSpecialSet, opt)
                 | None -> ()
                 ()
-                match calculateAlternationInitialOptimizationStrings c node (Dictionary()) with
-                | Some opt -> availableOptimizations.Add(StartSearchOptimization.AlternationSpecialSetStrings, opt)
-                | None -> ()
-                ()
+                // match calculateAlternationInitialOptimizationStrings c node characterWeights with
+                // | Some opt -> availableOptimizations.Add(StartSearchOptimization.AlternationSpecialSetStrings, opt)
+                // | None -> ()
+                // ()
             | _ -> ()
         availableOptimizations
 
@@ -1193,10 +1194,11 @@ let calculateAlternationInitialOptimizationStrings
 
 let rec findAlternationBranches
     (node: RegexNode<'t>)
-    (c: RegexCache<'t>): 't array array =
+    (c: RegexCache<'t>)
+    (atBeginning: bool): 't array array =
     match node with
     | RegexNode.Or(nodes, _) ->
-        let tStringArrays = nodes |> Seq.map (fun n -> findAlternationBranches n c)
+        let tStringArrays = nodes |> Seq.map (fun n -> findAlternationBranches n c atBeginning)
         let impossible = tStringArrays
                          |> Seq.map (fun tStringArray -> tStringArray = [||])
                          |> Seq.contains true
@@ -1205,18 +1207,21 @@ let rec findAlternationBranches
         else
             tStringArrays |> Array.concat
     | RegexNode.Concat(head, tail, _) ->
-        let headStrings = findAlternationBranches head c
-        let tailStrings = findAlternationBranches tail c
+        let headStrings = findAlternationBranches head c atBeginning
+        let tailStrings = findAlternationBranches tail c (if headStrings = [|[||]|] then atBeginning else false)
         if headStrings.Length = 0 then [||]
         else if tailStrings.Length = 0 then headStrings
         else Array.allPairs headStrings tailStrings
              |> Array.map (fun (s1, s2) -> Array.concat [| s1; s2 |])
     | RegexNode.Singleton charSet ->
-        let mts = c.Minterms()
-        if c.Solver.elemOfSet charSet mts[0] then
-            [||]
+        [| [| charSet |] |]
+    | RegexNode.Loop(_, low, _, _) ->
+        if low = 0 && atBeginning then
+            [|[||]|]
         else
-            [| [| charSet |] |]
+            [||]
+    | RegexNode.Epsilon ->
+        [|[||]|]
     | _ -> [||]
 
 let calculateAlternationInitialOptimizationSetsInner
@@ -1258,7 +1263,7 @@ let calculateAlternationInitialOptimization
     (c: RegexCache<'t>)
     (node: RegexNode<'t>)
     (weights: IDictionary<char, float>) =
-    let branches = findAlternationBranches node c |> Array.map (fun s -> s |> Array.rev)
+    let branches = findAlternationBranches node c true |> Array.map (fun s -> s |> Array.rev)
     let possible = branches <> [||]
     if possible then
         let rarestChars, charToBranches = calculateAlternationInitialOptimizationSetsInner

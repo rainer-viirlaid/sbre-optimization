@@ -12,14 +12,20 @@ open System.Text.Json.Nodes
 open Microsoft.FSharp.Core
 
 
-let findLetterFrequency (text: IEnumerable<char>, textSize: int, symbolCount: int) =
+let findLetterCounts (text: IEnumerable<char>, textSize: int, symbolCount: int) =
     let counts = Dictionary<char, int>()
     let step = (textSize - 1) / symbolCount
-    text |> Seq.iteri (fun i c ->
-        if i % step = 0 then
+    if step = 0 then
+        text |> Seq.iter (fun (c: char) ->
             if not (counts.ContainsKey(c)) then counts.Add(c, 1)
-            else counts[c] <- (counts.Item(c) + 1)
-        )
+            else counts.Item(c) <- (counts.Item(c) + 1)
+            )
+    else
+        text |> Seq.iteri (fun i c ->
+            if i % step = 0 then
+                if not (counts.ContainsKey(c)) then counts.Add(c, 1)
+                else counts[c] <- (counts.Item(c) + 1)
+            )
     counts
     
 let encodeChar (character: char) onlyBMP =
@@ -57,30 +63,35 @@ let writeCharFrequenciesToJsonFile (charCounts: Dictionary<char,int>) filename f
     
 // Calculating weights
 
-let tammsaare = (__SOURCE_DIRECTORY__ + "/samples/Tammsaare Kollektsioon.txt" |> System.IO.File.ReadAllText)
+let twain = (__SOURCE_DIRECTORY__ + "/input-text.txt" |> System.IO.File.ReadAllText)
 let symbolCount = 100000
-let freqs = findLetterFrequency (tammsaare, tammsaare.Length, symbolCount)
+let freqsT = findLetterCounts (twain, twain.Length, symbolCount)
+// writeCharFrequenciesToJsonFile freqsT (__SOURCE_DIRECTORY__ + "/charFreqTwain.json") symbolCount true
+writeCharFrequenciesToJsonFile freqsT (__SOURCE_DIRECTORY__ + "/charFreqTwain-" + symbolCount.ToString() + ".json") symbolCount true
+
+
+let tammsaare = (__SOURCE_DIRECTORY__ + "/samples/Tammsaare Kollektsioon.txt" |> System.IO.File.ReadAllText)
+let freqs = findLetterCounts (tammsaare, tammsaare.Length, symbolCount)
 writeCharFrequenciesToJsonFile freqs (__SOURCE_DIRECTORY__ + "/charFreqTammsaare-" + symbolCount.ToString() + ".json") symbolCount true
 
 
 let vikipeedia = "" |> System.IO.File.ReadAllText
-let freqsV = findLetterFrequency (vikipeedia, 0, 0)
+let freqsV = findLetterCounts (vikipeedia, 0, 0)
 writeCharFrequenciesToJsonFile freqsV (__SOURCE_DIRECTORY__ + "/charFreqVikipeedia.json") vikipeedia.Length true
 
 
 let sherlock = __SOURCE_DIRECTORY__ + "/sherlock.txt" |> System.IO.File.ReadAllText
-let freqsS = findLetterFrequency (sherlock, 0, 0)
+let freqsS = findLetterCounts (sherlock, 0, 0)
 writeCharFrequenciesToJsonFile freqsS (__SOURCE_DIRECTORY__ + "/charFreqSherlock.json") sherlock.Length true
 
 
 let wikipedia1 = "" |> System.IO.File.ReadAllText
-let freqsW1 = findLetterFrequency (wikipedia1, 0, 0)
+let freqsW1 = findLetterCounts (wikipedia1, 0, 0)
 writeCharFrequenciesToJsonFile freqsW1 (__SOURCE_DIRECTORY__ + "/charFreqWikipedia1.json") wikipedia1.Length true
 
 
 let wikipedia9 = "C:\\Users\\Name\\Documents\\TalTech\\Loputoo\\Wikipedia\\Wikipedia EN 9.txt" |> System.IO.File.ReadAllText
-let symbolCount = 100000
-let freqsW9 = findLetterFrequency (wikipedia9, wikipedia9.Length, symbolCount)
+let freqsW9 = findLetterCounts (wikipedia9, wikipedia9.Length, symbolCount)
 writeCharFrequenciesToJsonFile freqsW9 (__SOURCE_DIRECTORY__ + "/charFreqWikipedia9-" + symbolCount.ToString() + ".json") symbolCount true
 
 
@@ -177,7 +188,7 @@ let columns = [|
     "100000 symbols"
     "All symbols"
 |]
-    
+
 let tammsaareWeights = [|
     __SOURCE_DIRECTORY__ + "/charFreqTammsaare-100.json"
     __SOURCE_DIRECTORY__ + "/charFreqTammsaare-1000.json"
@@ -185,7 +196,7 @@ let tammsaareWeights = [|
     __SOURCE_DIRECTORY__ + "/charFreqTammsaare-100000.json"
     __SOURCE_DIRECTORY__ + "/charFreqTammsaare.json"
 |]
-    
+
 let wiki9Weights = [|
     __SOURCE_DIRECTORY__ + "/charFreqWikipedia9-100.json"
     __SOURCE_DIRECTORY__ + "/charFreqWikipedia9-1000.json"
@@ -194,4 +205,12 @@ let wiki9Weights = [|
     __SOURCE_DIRECTORY__ + "/charFreqWikipedia9.json"
 |]
 
-combineIntoCsv wiki9Weights columns "charFreqWikipedia9-combined.csv"
+let twainWeights = [|
+    __SOURCE_DIRECTORY__ + "/charFreqTwain-100.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTwain-1000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTwain-10000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTwain-100000.json"
+    __SOURCE_DIRECTORY__ + "/charFreqTwain.json"
+|]
+
+combineIntoCsv twainWeights columns "charFreqTwain-combined.csv"

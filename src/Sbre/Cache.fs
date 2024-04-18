@@ -372,13 +372,13 @@ type RegexCache<
         (
             loc: inref<Location>,
             specialSet: inref<SearchValues<char>>,
-            branches: Dictionary<char, (struct (int * MintermSearchValues<'t>) array * int * int) array>
+            branches: Dictionary<char, (struct (int * MintermSearchValues<'t>) array * int * int) array>,
+            lastFoundPosition
         ) =
         let textSpan = loc.Input
-        let currentPosition = loc.Position
 
         let mutable searching = true
-        let mutable prevMatch = currentPosition
+        let mutable prevMatch = lastFoundPosition
         let mutable result = ValueNone
 
         while searching do
@@ -389,7 +389,7 @@ type RegexCache<
                 let mutable fullMatch = -1
                 for branchCharSets, startOffset, endOffset in branches[textSpan[curMatch]] do
                     let absMatchStart = curMatch - startOffset
-                    if fullMatch < curMatch + endOffset && 0 <= absMatchStart && curMatch + endOffset <= currentPosition then
+                    if fullMatch < curMatch + endOffset && 0 <= absMatchStart && curMatch + endOffset <= textSpan.Length then
                         let mutable i = 1
                         while i < branchCharSets.Length do
                             let struct (weightedSetIndex, weightedSet) =
@@ -407,7 +407,7 @@ type RegexCache<
 
                 if fullMatch <> -1 then
                     searching <- false
-                    result <- ValueSome(fullMatch)
+                    result <- ValueSome((fullMatch, curMatch))
         result
 
     

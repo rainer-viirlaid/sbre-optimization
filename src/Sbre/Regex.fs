@@ -637,9 +637,12 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
             _cache
             reverseNode
             reverseTrueStarredNode
+            (Dictionary())
                                          
     // TODO: select best optimization   
     let mutable _initialOptimization = _availableInitialOptimizations[StartSearchOptimization.NoOptimization]
+    
+    let mutable _lastAlternationMatch = -1
 
     let _lengthLookup =
         // expensive for very large regexes
@@ -664,45 +667,24 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         ()
                 
     member this.SetCharacterWeights(weights: IDictionary<char, float>) =
-        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.WeightedExactSets) then
-            match _availableInitialOptimizations[StartSearchOptimization.WeightedExactSets] with
-            | InitialOptimizations.WeightedSearchValuesPrefix(weightedPrefix, l, n) -> 
-                let newSets = reorderPrefixCustomWeights
-                                  weights (weightedPrefix |> Array.map (fun struct (_, sv) -> sv.Minterm)) _cache
-                _availableInitialOptimizations[StartSearchOptimization.WeightedExactSets] <-
-                    InitialOptimizations.WeightedSearchValuesPrefix(newSets, l, n)
-            | _ -> ()
-            
-        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.WeightedApproximateSets) then
-            match _availableInitialOptimizations[StartSearchOptimization.WeightedApproximateSets] with
-            | InitialOptimizations.WeightedSearchValuesPotentialStart(weightedPrefix, l) -> 
-                let newSets = reorderPrefixCustomWeights
-                                  weights (weightedPrefix |> Array.map (fun struct (_, sv) -> sv.Minterm)) _cache
-                _availableInitialOptimizations[StartSearchOptimization.WeightedApproximateSets] <-
-                    InitialOptimizations.WeightedSearchValuesPotentialStart(newSets, l)
-            | _ -> ()
-        
-        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.AlternationSpecialSet) then
-            match _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] with
-            | InitialOptimizations.AlternationBestSet _ ->
-                match calculateAlternationInitialOptimization _cache reverseNode weights with
-                | Some optimization -> _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] <- optimization
-                | None -> ()
-            | _ -> ()
-        
-        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.AlternationSpecialSetStrings) then
-            match _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSetStrings] with
-            | InitialOptimizations.AlternationBestSetStrings _ ->
-                match calculateAlternationInitialOptimizationStrings _cache reverseNode weights with
-                | Some optimization -> _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSetStrings] <- optimization
-                | None -> ()
-            | _ -> ()
+        _availableInitialOptimizations <-
+            findInitialOptimizations
+                (fun (mt, node) ->
+                    let mutable loc = Location.getNonInitial ()
+                    _createDerivative (&loc, mt, node))
+
+                (fun node -> _getOrCreateState(reverseTrueStarredNode, node, false).Id)
+                (fun node -> _getOrCreateState(reverseTrueStarredNode, node, false).Flags)
+                _cache
+                reverseNode
+                reverseTrueStarredNode
+                weights
 
         match _initialOptimization with
         | InitialOptimizations.WeightedSearchValuesPrefix _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedExactSets)
         | InitialOptimizations.WeightedSearchValuesPotentialStart _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
         | InitialOptimizations.AlternationBestSet _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
-        | InitialOptimizations.AlternationBestSetStrings _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
+        // | InitialOptimizations.AlternationBestSetStrings _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
         | _ -> ()
 
     member this.IsMatchRev(loc: byref<Location>) : bool =
@@ -711,6 +693,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         let mutable looping = true
         let mutable found = false
         let mutable currentStateId = DFA_TR_rev
+        _lastAlternationMatch <- loc.Input.Length
 
 
         while looping do
@@ -1101,11 +1084,11 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 false
         | InitialOptimizations.AlternationBestSet(rarestCharsSV, charToBranches) ->
             let skipResult =
-                _cache.TryNextStartsetLocationReversedAlternation(&loc, &rarestCharsSV, charToBranches)
-
+                _cache.TryNextStartsetLocationReversedAlternation(&loc, &rarestCharsSV, charToBranches, _lastAlternationMatch)
             match skipResult with
-            | ValueSome resultEnd ->
+            | ValueSome (resultEnd, searchPos) ->
                 loc.Position <- resultEnd
+                _lastAlternationMatch <- searchPos
                 false
             | ValueNone ->
                 // no matches remaining
@@ -1314,6 +1297,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         assert (loc.Reversed = true)
         let mutable looping = true
         let mutable currentStateId = DFA_TR_rev
+        _lastAlternationMatch <- loc.Input.Length
 
         while looping do
             let flags = _flagsArray[currentStateId]
@@ -1817,6 +1801,7 @@ type Regex
             typedmatcher.Cache
             typedmatcher.ReversePattern
             typedmatcher.ReverseTrueStarredPattern
+            (Dictionary())
 
 
 #if DEBUG

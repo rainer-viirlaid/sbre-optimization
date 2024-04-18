@@ -4,6 +4,7 @@ module Sbre.Test.Common
 
 open System
 open System.Collections
+open System.Collections.Generic
 open Sbre
 open Sbre.Algorithm
 open Sbre.CountingSet
@@ -98,6 +99,7 @@ let getInitOptimizations pattern =
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+            (Dictionary())
     optimizations
 
 let assertPotentialStart pattern expected =
@@ -113,6 +115,7 @@ let assertPotentialStart pattern expected =
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+            (Dictionary())
     let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.ApproximateSets))
     match optimizations with
     | Optimizations.InitialOptimizations.SearchValuesPotentialStart(_,prefix) ->
@@ -134,6 +137,7 @@ let assertPrefixLength pattern expected =
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+            (Dictionary())
     if availableOptimizations.ContainsKey(Optimizations.StartSearchOptimization.ApproximateSets) then
         match availableOptimizations[Optimizations.StartSearchOptimization.ApproximateSets] with
         | Optimizations.InitialOptimizations.SearchValuesPotentialStart(prefix,_) ->
@@ -161,6 +165,7 @@ let assertSetsPrefix pattern expected =
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+            (Dictionary())
     let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.ExactSets))
     match optimizations with
     | Optimizations.InitialOptimizations.SearchValuesPrefix(prefix, _, transId) ->
@@ -181,6 +186,7 @@ let assertStringPrefix pattern expected =
             (fun node -> matcher.GetOrCreateState(node).Id)
             (fun node -> matcher.GetOrCreateState(node).Flags)
             matcher.Cache matcher.ReversePattern matcher.ReverseTrueStarredPattern
+            (Dictionary())
     let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.StringEnd))
     match optimizations with
     | Optimizations.InitialOptimizations.StringPrefix(prefix, transId) ->

@@ -1,11 +1,17 @@
 module Sbre.Benchmarks.Optimizations
 
 open System.Collections.Generic
+open System.Globalization
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open System.Runtime.Intrinsics
 open System.Runtime.Intrinsics.X86
 open BenchmarkDotNet.Attributes
+open BenchmarkDotNet.Columns
+open BenchmarkDotNet.Configs
+open BenchmarkDotNet.Exporters.Csv
+open BenchmarkDotNet.Reports
+open Perfolizer.Horology
 open Sbre
 open Sbre.Benchmarks.Jobs
 open Sbre.Optimizations
@@ -14,91 +20,25 @@ open Sbre.Pat
 open Sbre.Types
 open System.Text.Json.Nodes
 open System.Buffers
-let fullInput = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
-// let fullInput = __SOURCE_DIRECTORY__ + "/data/sherlock.txt" |> System.IO.File.ReadAllText
-// let fullInput = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
 
-let frequenciesJsonText = __SOURCE_DIRECTORY__ + "/data/charFreqWithControl.json"  |> System.IO.File.ReadAllText
+
+let twain = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
+let sherlock = __SOURCE_DIRECTORY__ + "/data/sherlock.txt" |> System.IO.File.ReadAllText
+let subtitlesMed = __SOURCE_DIRECTORY__ + "/data/en-medium.txt" |> System.IO.File.ReadAllText
+// let rust = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
 
 let testInput =
-                // "Lorem there have ipsum"
-                fullInput
-                // |> String.replicate 10
-                // |> String.replicate 100
+                // twain
+                sherlock |> String.replicate 100
+                // rust
+                // subtitlesMed
 
 
-module Patterns =
-
-    // rust-src-tools-3b0d4813.txt
-    // TODO: bitvector error
-    let DATE = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-date.txt" )
-    
-    // rust-src-tools-3b0d4813.txt
-    let URL = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-url.txt" )
-    
-    [<Literal>] // en-sampled.txt
-    let SHERLOCK = @"Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty"
-    [<Literal>] // en-sampled.txt
-    let SHERLOCK_CASEIGNORE = @"(?i)Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty"
-
-    [<Literal>] // twain
-    let WORD_END = @"\w+nn\W" // \b\w+nn\b
-
-    [<Literal>] // twain
-    let HAVE_THERE = ".*have.*&.*there.*"
-
-    [<Literal>] // twain
-    let TWAIN = "Twain"
-
-    [<Literal>] // twain
-    let TWAIN_CASEIGNORE = "(?i)Twain"
-
-    [<Literal>] // twain
-    let AZ_SHING = "[a-z]shing"
-
-    [<Literal>] // twain
-    let HUCK_SAW = @"Huck[a-zA-Z]+|Saw[a-zA-Z]+"
-
-    [<Literal>] // twain
-    let AQ_X = "[a-q][^u-z]{13}x"
-
-    [<Literal>] // twain
-    let TOM_SAWYER_HUCKLEBERRY_FINN = "Tom|Sawyer|Huckleberry|Finn"
-
-    [<Literal>] // twain
-    let TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE = "(?i)Tom|Sawyer|Huckleberry|Finn"
-
-    [<Literal>] // twain
-    let D02_TOM_SAWYER_HUCKLEBERRY_FINN = ".{0,2}(Tom|Sawyer|Huckleberry|Finn)"
-
-    [<Literal>] // twain
-    let D24_TOM_SAWYER_HUCKLEBERRY_FINN = ".{2,4}(Tom|Sawyer|Huckleberry|Finn)"
-
-    [<Literal>] // twain
-    let TOM_RIVER = "Tom.{10,25}river|river.{10,25}Tom"
-
-    [<Literal>] // twain
-    let AZ_ING = "[a-zA-Z]+ing"
-
-    [<Literal>] // twain
-    let AZ_ING_SPACES = "\s[a-zA-Z]{0,12}ing\s"
-
-    [<Literal>] // twain
-    let AZ_AWYER_INN = "([A-Za-z]awyer|[A-Za-z]inn)\s"
-
-    [<Literal>] // twain
-    let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
-
-    [<Literal>] // twain
-    let HUCK_AZ = @"Huck[A-Za-z]"
-
-    [<Literal>] // twain
-    let AZ_UCK_AZ = @"[A-Za-z]uck[A-Za-z]"
-
-    [<Literal>] // twain
-    let H_AZ_CK_AZ = @"H[A-Za-z]ck[A-Za-z]"
-
-
+let twainWeightsJson = __SOURCE_DIRECTORY__ + "/data/charFreqTwain.json"  |> System.IO.File.ReadAllText
+let twainWeights100Json = __SOURCE_DIRECTORY__ + "/data/charFreqTwain-100.json"  |> System.IO.File.ReadAllText
+let twainWeights1kJson = __SOURCE_DIRECTORY__ + "/data/charFreqTwain-1000.json"  |> System.IO.File.ReadAllText
+let twainWeights10kJson = __SOURCE_DIRECTORY__ + "/data/charFreqTwain-10000.json"  |> System.IO.File.ReadAllText
+let twainWeights100kJson = __SOURCE_DIRECTORY__ + "/data/charFreqTwain-100000.json"  |> System.IO.File.ReadAllText
 
 let loadJsonCharFrequencies (jsonText: string) =
     let json = JsonValue.Parse jsonText
@@ -106,52 +46,205 @@ let loadJsonCharFrequencies (jsonText: string) =
         ((charFreq.Item "character").GetValue<char>(), (charFreq.Item "frequency").GetValue<float>())
         ) |> dict
 
-let characterFreq = loadJsonCharFrequencies frequenciesJsonText
+let twainWeightsFull = loadJsonCharFrequencies twainWeightsJson
+let twainWeights100 = loadJsonCharFrequencies twainWeights10kJson
+let twainWeights1k = loadJsonCharFrequencies twainWeights10kJson
+let twainWeights10k = loadJsonCharFrequencies twainWeights10kJson
+let twainWeights100k = loadJsonCharFrequencies twainWeights100kJson
+
+
+module Patterns =
+    
+    // Patterns from Rebar
+
+    // rust-src-tools-3b0d4813.txt
+    // TODO: bitvector error
+    // let DATE = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-date.txt" )
+    
+    // rust-src-tools-3b0d4813.txt
+    // let URL = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-url.txt" )
+    
+    let DICTIONARY_15 = __SOURCE_DIRECTORY__ + "/data/length-15.txt" |> System.IO.File.ReadAllText |> _.Split("\n") |> fun r -> String.Join("|", r)
+    
+    [<Literal>]
+    let SHERLOCK = @"Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty"
+    
+    [<Literal>]
+    let SHERLOCK_CASEIGNORE = @"(?i)Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty"
+
+    // Twain patterns from https://zherczeg.github.io/sljit/regex_perf.html
+
+    [<Literal>]
+    let TWAIN = @"Twain"
+
+    [<Literal>]
+    let TWAIN_CASEIGNORE = @"(?i)Twain"
+
+    [<Literal>]
+    let AZ_SHING = @"[a-z]shing"
+
+    [<Literal>]
+    let HUCK_SAW = @"Huck[a-zA-Z]+|Saw[a-zA-Z]+"
+    
+    [<Literal>]
+    let WORD_END = @"\b\w+nn\b" // Similar but differentx: \w+nn\W
+
+    [<Literal>]
+    let AQ_X = @"[a-q][^u-z]{13}x"
+
+    [<Literal>]
+    let TOM_SAWYER_HUCKLEBERRY_FINN = @"Tom|Sawyer|Huckleberry|Finn"
+
+    [<Literal>]
+    let TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE = @"(?i)Tom|Sawyer|Huckleberry|Finn"
+
+    [<Literal>]
+    let D02_TOM_SAWYER_HUCKLEBERRY_FINN = @".{0,2}(Tom|Sawyer|Huckleberry|Finn)"
+
+    [<Literal>]
+    let D24_TOM_SAWYER_HUCKLEBERRY_FINN = @".{2,4}(Tom|Sawyer|Huckleberry|Finn)"
+
+    [<Literal>]
+    let TOM_RIVER = @"Tom.{10,25}river|river.{10,25}Tom"
+
+    [<Literal>]
+    let AZ_ING = @"[a-zA-Z]+ing"
+
+    [<Literal>]
+    let AZ_ING_SPACES = @"\s[a-zA-Z]{0,12}ing\s"
+
+    [<Literal>]
+    let AZ_AWYER_INN = @"([A-Za-z]awyer|[A-Za-z]inn)\s"
+
+    [<Literal>]
+    let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
+    
+    // Other patterns for Twain
+
+    [<Literal>]
+    let HAVE_THERE = @".*have.*&.*there.*"
+
+    [<Literal>]
+    let HUCK_AZ = @"Huck[A-Za-z]"
+
+    [<Literal>]
+    let AZ_UCK_AZ = @"[A-Za-z]uck[A-Za-z]"
+
+    [<Literal>]
+    let H_AZ_CK_AZ = @"H[A-Za-z]ck[A-Za-z]"
 
 
 
+type BenchmarkConfig() as self =
+    inherit ManualConfig() 
+    do
+        let summaryStyle = SummaryStyle(CultureInfo.InvariantCulture, true, SizeUnit.B, TimeUnit.Millisecond, false)
+                            .WithMaxParameterColumnWidth(60)
+        self.SummaryStyle <- summaryStyle
+        self
+            .AddExporter(CsvExporter(CsvSeparator.Comma, summaryStyle))
+            // .With(CsvExporter(CsvSeparator.Comma, summaryStyle))
+            |> ignore
 
+
+
+[<Config(typedefof<BenchmarkConfig>)>]
 [<MemoryDiagnoser(true)>]
 // [<ShortRunJob>]
 type PrefixCharsetSearch () =
 
-    // [<Params(
-    //     // Twain regexes
-    //     
-    //     // Patterns.WORD_END,
-    //     // Patterns.HAVE_THERE,
-    //     // Patterns.TWAIN,
-    //     // Patterns.TWAIN_CASEIGNORE,
-    //     // Patterns.AZ_SHING,
-    //     // Patterns.HUCK_SAW,
-    //     // Patterns.AQ_X,
-    //     Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
-    //     // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-    //     // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-    //     // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-    //     // Patterns.TOM_RIVER,
-    //     // Patterns.AZ_ING,
-    //     // Patterns.AZ_ING_SPACES,
-    //     // Patterns.AZ_AWYER_INN,
-    //     // Patterns.QUOTES
-    //     // Patterns.HUCK_AZ,
-    //     // Patterns.AZ_UCK_AZ,
-    //     // Patterns.H_AZ_CK_AZ
-    //     
-    //     // Sherlock regexes
-    //     
-    //     // Patterns.SHERLOCK
-    //     // Patterns.SHERLOCK_CASEIGNORE,
-    //     // Patterns.WORD_END,
-    //     // Patterns.HAVE_THERE,
-    //     // Patterns.AZ_SHING,
-    //     // Patterns.AQ_X,
-    //     // Patterns.AZ_ING,
-    //     // Patterns.AZ_ING_SPACES,
-    //     // Patterns.QUOTES
-    // )>]
-    member val rs: string = Patterns.AZ_SHING with get, set
+    [<Params(
+        // Twain regexes
+        
+        // Patterns.TWAIN,
+        // Patterns.TWAIN_CASEIGNORE,
+        // Patterns.AZ_SHING,
+        // Patterns.HUCK_SAW,
+        // Patterns.WORD_END,
+        // Patterns.AQ_X,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_RIVER,
+        // Patterns.AZ_ING,
+        // Patterns.AZ_ING_SPACES,
+        // Patterns.AZ_AWYER_INN,
+        // Patterns.QUOTES,
+        //
+        // Patterns.HAVE_THERE,
+        // Patterns.HUCK_AZ,
+        // Patterns.AZ_UCK_AZ,
+        // Patterns.H_AZ_CK_AZ
+        
+        // Rebar regexes
+        
+        Patterns.SHERLOCK
+        // Patterns.SHERLOCK_CASEIGNORE
+    )>]
+    member val rs: string = "" with get, set
+    
+    member val regex: Regex = Regex("") with get, set
+    
+    
 
+    [<GlobalSetup(Target = "Alternation")>]
+    member this.AlternationSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+
+    [<Benchmark>]
+    member this.Alternation() =
+        this.regex.Count(testInput)
+        
+        
+        
+    
+    member this.ManualTesting() =
+        this.AlternationSetup()
+        let c = this.Alternation()
+        ()
+    
+    member this.MatchCountTesting() =
+        let pats = [|
+            Patterns.TWAIN // 811
+            Patterns.TWAIN_CASEIGNORE // 965
+            Patterns.AZ_SHING // 1540
+            Patterns.HUCK_SAW // 262
+            Patterns.WORD_END // 262
+            Patterns.AQ_X // 4094, Rider finds 4081
+            Patterns.TOM_SAWYER_HUCKLEBERRY_FINN // 2598
+            Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE // 4152
+            Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN // 2598
+            Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN // 1976
+            Patterns.TOM_RIVER // 2
+            Patterns.AZ_ING // 78 423
+            Patterns.AZ_ING_SPACES // 55 248
+            Patterns.AZ_AWYER_INN // 209
+            Patterns.QUOTES // 8885, Rider finds 8927
+           
+            Patterns.HAVE_THERE // 426
+            Patterns.HUCK_AZ // 56
+            Patterns.AZ_UCK_AZ // 706
+            Patterns.H_AZ_CK_AZ // 97
+        |]
+        for pat in pats do
+            this.regex <- Regex(pat)
+            this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+            // this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+            let count = this.regex.Count(testInput)
+            ()
+            
+        
+   
+   
+   
+[<Config(typedefof<BenchmarkConfig>)>]
+[<MemoryDiagnoser(true)>]
+// [<ShortRunJob>]
+type WeightCalculation () =
+    
     [<Params(
         100,
         1000,
@@ -160,125 +253,7 @@ type PrefixCharsetSearch () =
     )>]
     member val symbolCount: int = 1 with get, set
     
-    member val regex: Regex = Regex("") with get, set
-    
     member val runtimeWeights: Dictionary<Char, int> = Dictionary() with get, set
-
-    [<GlobalSetup(Target = "NoSkip")>]
-    member this.NoSkipSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.NoOptimization)
-
-    // [<Benchmark>]
-    member this.NoSkip() =
-        this.regex.Count(testInput)
-
-    
-    [<GlobalSetup(Target = "SetsSuffix")>]
-    member this.SetsSuffixSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ExactSets)
-
-    // [<Benchmark>]
-    member this.SetsSuffix() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "WeightedSetsSimple")>]
-    member this.WeightedSetsSimpleSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
-
-    // [<Benchmark>]
-    member this.WeightedSetsSimple() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "WeightedSetsFromFile")>]
-    member this.WeightedSetsFromFileSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-
-    // [<Benchmark>]
-    member this.WeightedSetsFromFile() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "Exact")>]
-    member this.ExactSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ExactSets)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-
-    // [<Benchmark>]
-    member this.Exact() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "Approximate")>]
-    member this.ApproximateSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-
-    // [<Benchmark>]
-    member this.Approximate() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "ApproximateSets")>]
-    member this.ApproximateSetsSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
-
-    // [<Benchmark>]
-    member this.ApproximateSets() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "WeightedApproxSets")>]
-    member this.WeightedApproxSetsSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-
-    // [<Benchmark>]
-    member this.WeightedApproxSets() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "AlternationSpecialWeightedSet")>]
-    member this.AlternationSpecialSetSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-
-    // [<Benchmark>]
-    member this.AlternationSpecialWeightedSet() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "AlternationSpecialWeightedSetString")>]
-    member this.AlternationSpecialSetStringSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-
-    // [<Benchmark>]
-    member this.AlternationSpecialWeightedSetString() =
-        this.regex.Count(testInput)
-        
-        
-    [<GlobalSetup(Target = "StringInside")>]
-    member this.StringInsideSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.StringInside)
-
-    // [<Benchmark>]
-    member this.StringInside() =
-        this.regex.Count(testInput)
-        
         
     [<GlobalSetup(Target = "CalculatingWeights")>]
     member this.CalculatingWeightsSetup() =
@@ -294,73 +269,118 @@ type PrefixCharsetSearch () =
                 this.runtimeWeights[character] <- 1
             else
                 this.runtimeWeights[character] <- this.runtimeWeights[character] + 1
+
+
+
+   
+[<Config(typedefof<BenchmarkConfig>)>]
+[<MemoryDiagnoser(true)>]
+// [<ShortRunJob>]
+type WeightsComparison () =
+
+    [<Params(
+        // Twain regexes
         
+        // Patterns.TWAIN,
+        // Patterns.TWAIN_CASEIGNORE,
+        // Patterns.AZ_SHING,
+        // Patterns.HUCK_SAW,
+        // Patterns.WORD_END,
+        // Patterns.AQ_X,
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
+        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        // Patterns.TOM_RIVER,
+        // Patterns.AZ_ING,
+        // Patterns.AZ_ING_SPACES,
+        // Patterns.AZ_AWYER_INN,
+        // Patterns.QUOTES,
+        //
+        // Patterns.HAVE_THERE,
+        // Patterns.HUCK_AZ,
+        // Patterns.AZ_UCK_AZ,
+        // Patterns.H_AZ_CK_AZ
         
+        // Rebar regexes
         
-        
-    member this.testSetup () =
+        Patterns.SHERLOCK
+        // Patterns.SHERLOCK_CASEIGNORE
+    )>]
+    member val rs: string = "" with get, set
+    
+    member val regex: Regex = Regex("") with get, set
+    
+
+    [<GlobalSetup(Target = "FullWeights")>]
+    member this.FullWeightsSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
-        this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-        ()
-        
-    member this.testRun () =
-        let c = this.regex.Count(testInput)
-        ()
-        
-    member this.testWhole () =
-        // let regexes = [
-        //     Patterns.WORD_END
-        //     Patterns.HAVE_THERE
-        //     Patterns.TWAIN
-        //     Patterns.TWAIN_CASEIGNORE
-        //     Patterns.AZ_SHING
-        //     Patterns.HUCK_SAW
-        //     Patterns.AQ_X
-        //     Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
-        //     Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE
-        //     Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN
-        //     Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN
-        //     Patterns.TOM_RIVER
-        //     Patterns.AZ_ING
-        //     Patterns.AZ_ING_SPACES
-        //     Patterns.AZ_AWYER_INN
-        //     Patterns.QUOTES
-        // ]
-        // for regexStr in regexes do
-        //     let regexOld = Regex(regexStr)
-        //     regexOld.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
-        //     let c1 = regexOld.Count(testInput)
-        //     let regexNew = Regex(regexStr)
-        //     regexNew.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
-        //     let c2 = regexOld.Count(testInput)
-        //     assert (c1 = c2)
-        
-        
-        // this.regex <- Regex(Patterns.TOM_SAWYER_HUCKLEBERRY_FINN)
-        // this.regex <- Regex(@"Huck[A-Za-z]")
-        // this.regex <- Regex(@"[A-Za-z]uck[A-Za-z]")
-        // this.regex <- Regex(@"H[A-Za-z]ck[A-Za-z]")
-        // this.regex <- Regex(@"Tom|Sawyer|Huckleberry|Finn")
-        // this.regex <- Regex(@"Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty")
-        // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
-        // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.ApproximateSets)
-        // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.StringInside)
-        // this.regex.TSetMatcher.SetCharacterWeights(characterFreq)
-        // let c1 = this.regex.Count(testInput)
-        let c1 = this.regex.Count("It's night or day.")
-        // let c1 = this.regex.Count("John Watson")
-        this.CalculatingWeights()
-        
-        
-        // this.regex.TSetMatcher.StartSearchMode <- StartSearchOptimization.Original
-        // let c2 = this.regex.Count(testInput)
-        // assert (c1 = c2)
-        ()
-            
-        
-        
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+
+    [<Benchmark>]
+    member this.FullWeights() =
+        this.regex.Count(testInput)
+    
+
+    [<GlobalSetup(Target = "_100Weights")>]
+    member this._100WeightsSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeights100)
+
+    [<Benchmark>]
+    member this._100Weights() =
+        this.regex.Count(testInput)
+    
+
+    [<GlobalSetup(Target = "_1kWeights")>]
+    member this._1kWeightsSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeights1k)
+
+    [<Benchmark>]
+    member this._1kWeights() =
+        this.regex.Count(testInput)
+    
+
+    [<GlobalSetup(Target = "_10kWeights")>]
+    member this._10kWeightsSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeights10k)
+
+    [<Benchmark>]
+    member this._10kWeights() =
+        this.regex.Count(testInput)
+    
+
+    [<GlobalSetup(Target = "_100kWeights")>]
+    member this._100kWeightsSetup() =
+        this.regex <- Regex(this.rs)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeights100k)
+
+    [<Benchmark>]
+    member this._100kWeights() =
+        this.regex.Count(testInput)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -392,8 +412,8 @@ type StringPrefix(pattern:string) =
 
     [<Benchmark>]
     member x.SpanIndexOf1() =
-        let span = fullInput.AsSpan()
-        let mutable currpos = fullInput.Length
+        let span = testInput.AsSpan()
+        let mutable currpos = testInput.Length
         let mutable looping = true
         let mutable tc = 0
         let tlen = "Twain".Length
@@ -426,7 +446,7 @@ type StringPrefix(pattern:string) =
 
     [<Benchmark>]
     member x.SpanIndexOf2() =
-        let origspan = fullInput.AsSpan()
+        let origspan = testInput.AsSpan()
         let mutable tc = 0
         let alignAmount = origspan.Length % 16
         let alignSpan = origspan.Slice(alignAmount)

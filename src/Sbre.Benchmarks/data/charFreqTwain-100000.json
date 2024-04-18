@@ -1,0 +1,328 @@
+{
+  "characters": [
+    {
+      "character": " ",
+      "frequency": 17.408000
+    },
+    {
+      "character": "e",
+      "frequency": 9.088000
+    },
+    {
+      "character": "t",
+      "frequency": 6.900000
+    },
+    {
+      "character": "a",
+      "frequency": 5.992000
+    },
+    {
+      "character": "o",
+      "frequency": 5.534000
+    },
+    {
+      "character": "n",
+      "frequency": 5.374000
+    },
+    {
+      "character": "i",
+      "frequency": 4.738000
+    },
+    {
+      "character": "s",
+      "frequency": 4.430000
+    },
+    {
+      "character": "h",
+      "frequency": 4.379000
+    },
+    {
+      "character": "r",
+      "frequency": 4.180000
+    },
+    {
+      "character": "d",
+      "frequency": 3.376000
+    },
+    {
+      "character": "l",
+      "frequency": 3.064000
+    },
+    {
+      "character": "u",
+      "frequency": 2.137000
+    },
+    {
+      "character": "\r",
+      "frequency": 1.929000
+    },
+    {
+      "character": "\n",
+      "frequency": 1.865000
+    },
+    {
+      "character": "m",
+      "frequency": 1.723000
+    },
+    {
+      "character": "w",
+      "frequency": 1.676000
+    },
+    {
+      "character": "c",
+      "frequency": 1.670000
+    },
+    {
+      "character": "f",
+      "frequency": 1.593000
+    },
+    {
+      "character": "g",
+      "frequency": 1.494000
+    },
+    {
+      "character": "y",
+      "frequency": 1.444000
+    },
+    {
+      "character": "p",
+      "frequency": 1.208000
+    },
+    {
+      "character": ",",
+      "frequency": 1.196000
+    },
+    {
+      "character": "b",
+      "frequency": 0.997000
+    },
+    {
+      "character": ".",
+      "frequency": 0.913000
+    },
+    {
+      "character": "v",
+      "frequency": 0.672000
+    },
+    {
+      "character": "k",
+      "frequency": 0.572000
+    },
+    {
+      "character": "-",
+      "frequency": 0.542000
+    },
+    {
+      "character": "I",
+      "frequency": 0.464000
+    },
+    {
+      "character": "\u0022",
+      "frequency": 0.327000
+    },
+    {
+      "character": "\u0027",
+      "frequency": 0.307000
+    },
+    {
+      "character": "T",
+      "frequency": 0.295000
+    },
+    {
+      "character": "A",
+      "frequency": 0.206000
+    },
+    {
+      "character": ";",
+      "frequency": 0.175000
+    },
+    {
+      "character": "S",
+      "frequency": 0.171000
+    },
+    {
+      "character": "H",
+      "frequency": 0.144000
+    },
+    {
+      "character": "M",
+      "frequency": 0.131000
+    },
+    {
+      "character": "W",
+      "frequency": 0.120000
+    },
+    {
+      "character": "E",
+      "frequency": 0.119000
+    },
+    {
+      "character": "B",
+      "frequency": 0.102000
+    },
+    {
+      "character": "x",
+      "frequency": 0.093000
+    },
+    {
+      "character": "N",
+      "frequency": 0.090000
+    },
+    {
+      "character": "C",
+      "frequency": 0.088000
+    },
+    {
+      "character": "R",
+      "frequency": 0.083000
+    },
+    {
+      "character": "!",
+      "frequency": 0.079000
+    },
+    {
+      "character": "j",
+      "frequency": 0.079000
+    },
+    {
+      "character": "O",
+      "frequency": 0.077000
+    },
+    {
+      "character": "L",
+      "frequency": 0.074000
+    },
+    {
+      "character": "q",
+      "frequency": 0.072000
+    },
+    {
+      "character": "D",
+      "frequency": 0.068000
+    },
+    {
+      "character": "P",
+      "frequency": 0.063000
+    },
+    {
+      "character": "Y",
+      "frequency": 0.056000
+    },
+    {
+      "character": "F",
+      "frequency": 0.054000
+    },
+    {
+      "character": "?",
+      "frequency": 0.052000
+    },
+    {
+      "character": "G",
+      "frequency": 0.045000
+    },
+    {
+      "character": "J",
+      "frequency": 0.041000
+    },
+    {
+      "character": "z",
+      "frequency": 0.041000
+    },
+    {
+      "character": ":",
+      "frequency": 0.033000
+    },
+    {
+      "character": "0",
+      "frequency": 0.028000
+    },
+    {
+      "character": "1",
+      "frequency": 0.023000
+    },
+    {
+      "character": "K",
+      "frequency": 0.019000
+    },
+    {
+      "character": "U",
+      "frequency": 0.019000
+    },
+    {
+      "character": "(",
+      "frequency": 0.018000
+    },
+    {
+      "character": "V",
+      "frequency": 0.018000
+    },
+    {
+      "character": ")",
+      "frequency": 0.015000
+    },
+    {
+      "character": "X",
+      "frequency": 0.011000
+    },
+    {
+      "character": "6",
+      "frequency": 0.011000
+    },
+    {
+      "character": "3",
+      "frequency": 0.011000
+    },
+    {
+      "character": "5",
+      "frequency": 0.010000
+    },
+    {
+      "character": "2",
+      "frequency": 0.009000
+    },
+    {
+      "character": "_",
+      "frequency": 0.009000
+    },
+    {
+      "character": "8",
+      "frequency": 0.008000
+    },
+    {
+      "character": "4",
+      "frequency": 0.008000
+    },
+    {
+      "character": "7",
+      "frequency": 0.007000
+    },
+    {
+      "character": "]",
+      "frequency": 0.005000
+    },
+    {
+      "character": "[",
+      "frequency": 0.004000
+    },
+    {
+      "character": "9",
+      "frequency": 0.004000
+    },
+    {
+      "character": "Q",
+      "frequency": 0.003000
+    },
+    {
+      "character": "$",
+      "frequency": 0.003000
+    },
+    {
+      "character": "Z",
+      "frequency": 0.001000
+    },
+    {
+      "character": "/",
+      "frequency": 0.001000
+    }
+  ]
+}

@@ -85,7 +85,7 @@ open System
 // let strSV = SearchValues.Create(words, StringComparison.Ordinal)
 
 let pref = Optimizations.PrefixCharsetSearch()
-pref.testWhole()
+pref.ManualTesting()
 
 // pref.OriginalSetup()
 // let c1 = pref.IntegratedOriginal()
