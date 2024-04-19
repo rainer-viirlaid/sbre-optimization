@@ -660,6 +660,12 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
     let mutable _regexOverride =
         inferOverrideRegex _initialOptimization _lengthLookup _cache R_canonical
         
+    static let mutable outerLoopCount: int = 0
+    
+    static member OuterLoopCount 
+        with get() = outerLoopCount
+        and set v = outerLoopCount <- v
+        
     member this.SetStartSearchOptimization(optimizationType: StartSearchOptimization) =
         if _availableInitialOptimizations.ContainsKey(optimizationType) then
             _initialOptimization <- _availableInitialOptimizations[optimizationType]
@@ -1300,6 +1306,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         _lastAlternationMatch <- loc.Input.Length
 
         while looping do
+            RegexMatcher.OuterLoopCount <- (RegexMatcher.OuterLoopCount + 1)
             let flags = _flagsArray[currentStateId]
             let dfaState = _stateArray[currentStateId]
 #if SKIP

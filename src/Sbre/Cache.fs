@@ -125,6 +125,29 @@ type RegexCache<
 
 
 
+    static let mutable charSetCount: int = 4
+    static let mutable innerLoopCount: int = 0
+    static let mutable skipCallCount: int = 0
+    static let mutable lastIndexOfCount: int = 0
+    
+    static member CharSetCount 
+        with get() = charSetCount
+        and set v = charSetCount <- v
+
+    static member InnerLoopCount 
+        with get() = innerLoopCount
+        and set v = innerLoopCount <- v
+
+    static member SkipCallCount 
+        with get() = skipCallCount
+        and set v = skipCallCount <- v
+
+    static member LastIndexOfCount 
+        with get() = lastIndexOfCount
+        and set v = lastIndexOfCount <- v
+
+
+    
 
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member this.Minterms() : 't array = minterms
@@ -262,7 +285,9 @@ type RegexCache<
         ) =
         let textSpan = loc.Input
         let currentPosition = loc.Position
-        let charSetsCount = weightedSets.Length
+        // let charSetsCount = weightedSets.Length
+        let charSetsCount = RegexCache.CharSetCount
+        RegexCache.SkipCallCount <- RegexCache.SkipCallCount + 1
 
         let struct (rarestCharSetIndex, rarestCharSet) =
             weightedSets[0]
@@ -275,6 +300,7 @@ type RegexCache<
         let mutable result = ValueNone
 
         while searching do
+            RegexCache.LastIndexOfCount <- RegexCache.LastIndexOfCount + 1
             let nextMatch =
                 match rarestSetMode with
                 | MintermSearchMode.SearchValues ->
@@ -300,6 +326,7 @@ type RegexCache<
                 (curMatch - rarestCharSetIndex >= 0
                  && curMatch - rarestCharSetIndex + prefixLength <= currentPosition)
                 ->
+                RegexCache.InnerLoopCount <- RegexCache.InnerLoopCount + 1
                 let absMatchStart = curMatch - rarestCharSetIndex
                 let mutable i = 1
 

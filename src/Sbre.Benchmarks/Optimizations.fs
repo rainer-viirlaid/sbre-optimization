@@ -29,9 +29,10 @@ let subtitlesMed = __SOURCE_DIRECTORY__ + "/data/en-medium.txt" |> System.IO.Fil
 
 let testInput =
                 // twain
-                sherlock |> String.replicate 100
+                sherlock
                 // rust
                 // subtitlesMed
+                |> String.replicate 100
 
 
 let twainWeightsJson = __SOURCE_DIRECTORY__ + "/data/charFreqTwain.json"  |> System.IO.File.ReadAllText
@@ -58,7 +59,6 @@ module Patterns =
     // Patterns from Rebar
 
     // rust-src-tools-3b0d4813.txt
-    // TODO: bitvector error
     // let DATE = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-date.txt" )
     
     // rust-src-tools-3b0d4813.txt
@@ -159,7 +159,7 @@ type PrefixCharsetSearch () =
         // Patterns.TWAIN,
         // Patterns.TWAIN_CASEIGNORE,
         // Patterns.AZ_SHING,
-        // Patterns.HUCK_SAW,
+        Patterns.HUCK_SAW,
         // Patterns.WORD_END,
         // Patterns.AQ_X,
         // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
@@ -169,7 +169,7 @@ type PrefixCharsetSearch () =
         // Patterns.TOM_RIVER,
         // Patterns.AZ_ING,
         // Patterns.AZ_ING_SPACES,
-        // Patterns.AZ_AWYER_INN,
+        Patterns.AZ_AWYER_INN
         // Patterns.QUOTES,
         //
         // Patterns.HAVE_THERE,
@@ -179,18 +179,33 @@ type PrefixCharsetSearch () =
         
         // Rebar regexes
         
-        Patterns.SHERLOCK
+        // Patterns.SHERLOCK
         // Patterns.SHERLOCK_CASEIGNORE
     )>]
     member val rs: string = "" with get, set
+    
+    [<Params(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)>]
+    member val charSetCount: int = 0 with get, set
     
     member val regex: Regex = Regex("") with get, set
     
     
 
+    [<GlobalSetup(Target = "WeightedSets")>]
+    member this.WeightedSetsSetup() =
+        this.regex <- Regex(this.rs)
+        RegexCache.CharSetCount <- this.charSetCount
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+
+    [<Benchmark>]
+    member this.WeightedSets() =
+        this.regex.Count(testInput)
+
     [<GlobalSetup(Target = "Alternation")>]
     member this.AlternationSetup() =
         this.regex <- Regex(this.rs)
+        RegexCache.CharSetCount <- this.charSetCount
         this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
 
@@ -198,13 +213,47 @@ type PrefixCharsetSearch () =
     member this.Alternation() =
         this.regex.Count(testInput)
         
-        
+    member this.StringWeightCalc (searchStr: string) =
+        let weights = twainWeightsFull
+        let chars = searchStr.ToCharArray()
+        let mult = chars |> Array.map (fun c -> weights[c] / (float 100))
+                   |> Array.reduce (*)
+        let sum = chars |> Array.map (fun c -> weights[c] / (float 100))
+                   |> Array.reduce (+)
+        mult / sum * (float 100)
+    
         
     
     member this.ManualTesting() =
-        this.AlternationSetup()
-        let c = this.Alternation()
+        let weights = twainWeightsFull
+        let kc = this.StringWeightCalc "kc"
+        let KC = this.StringWeightCalc "KC"
+        let Ha = this.StringWeightCalc "Ha"
+        let H_ = this.StringWeightCalc "H "
+        let the = this.StringWeightCalc "the"
+        let The = this.StringWeightCalc "The"
         ()
+        
+    member this.LoopCounts() =
+        for i in 1..11 do
+            this.regex <- Regex(this.rs)
+            
+            RegexMatcher.OuterLoopCount <- 0
+            RegexCache.SkipCallCount <- 0
+            RegexCache.InnerLoopCount <- 0
+            RegexCache.LastIndexOfCount <- 0
+            RegexCache.CharSetCount <- i
+            
+            this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+            this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+            this.regex.Count(testInput)
+            
+            Console.WriteLine($"CharSets c: {RegexCache.CharSetCount}")
+            Console.WriteLine($"Outer loop: {RegexMatcher.OuterLoopCount}")
+            Console.WriteLine($"Skip calls: {RegexCache.SkipCallCount}")
+            Console.WriteLine($"Inner loop: {RegexCache.InnerLoopCount}")
+            Console.WriteLine($"LastIndxOf: {RegexCache.LastIndexOfCount}")
+        
     
     member this.MatchCountTesting() =
         let pats = [|
