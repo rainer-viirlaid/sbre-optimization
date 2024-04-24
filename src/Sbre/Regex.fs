@@ -643,12 +643,13 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         let mutable stringOptimization = StartSearchOptimization.NoOptimization
         let mutable stringPriority = float Single.MaxValue
         
-        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.StringEndCaseIgnore) then
-            match _availableInitialOptimizations[StartSearchOptimization.StringEndCaseIgnore] with
-                | InitialOptimizations.StringPrefixCaseIgnore(priority, _, _, _, _, _) ->
-                    stringOptimization <- StartSearchOptimization.StringEndCaseIgnore
-                    stringPriority <- priority
-                | _ -> failwith "wrong value in dictionary"
+        // Case insensitive string search is currently slow, so we won't suggest it
+        // if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.StringEndCaseIgnore) then
+        //     match _availableInitialOptimizations[StartSearchOptimization.StringEndCaseIgnore] with
+        //         | InitialOptimizations.StringPrefixCaseIgnore(priority, _, _, _, _, _) ->
+        //             stringOptimization <- StartSearchOptimization.StringEndCaseIgnore
+        //             stringPriority <- priority
+        //         | _ -> failwith "wrong value in dictionary"
         if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.StringEnd) then
             match _availableInitialOptimizations[StartSearchOptimization.StringEnd] with
                 | InitialOptimizations.StringPrefix(priority, _, _) ->

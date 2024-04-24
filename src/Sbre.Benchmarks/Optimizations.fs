@@ -196,7 +196,7 @@ type PrefixCharsetSearch () =
     [<GlobalSetup(Target = "Automatic")>]
     member this.AutomaticSetup() =
         this.regex <- Regex(this.rs)
-
+    
     [<Benchmark>]
     member this.Automatic() =
         this.regex.Count(testInput)
@@ -208,6 +208,15 @@ type PrefixCharsetSearch () =
     //
     // [<Benchmark>]
     // member this.Weighted() =
+    //     this.regex.Count(testInput)
+    //
+    // [<GlobalSetup(Target = "StringCaseIns")>]
+    // member this.StringCaseInsSetup() =
+    //     this.regex <- Regex(this.rs)
+    //     this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.StringEndCaseIgnore)
+    //
+    // [<Benchmark>]
+    // member this.StringCaseIns() =
     //     this.regex.Count(testInput)
         
     
@@ -222,7 +231,7 @@ type PrefixCharsetSearch () =
         
         // let a = this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
-        this.regex <- Regex(Patterns.WORD_END)
+        this.regex <- Regex("(?i)Tom")
         let c = this.regex.Count(testInput)
         ()
     
