@@ -102,7 +102,7 @@ let ``initialOptimizations 01``() =
     let availableOptimizations = getInitOptimizations "Twain"
     let optimizations = availableOptimizations[StartSearchOptimization.StringEnd]
     match optimizations with
-    | Optimizations.InitialOptimizations.StringPrefix(prefix, transitionNode) ->
+    | Optimizations.InitialOptimizations.StringPrefix(_, prefix, transitionNode) ->
         Assert.True(prefix.Length = 5)
     | _ -> failwith "invalid optimization result"
 
@@ -122,7 +122,7 @@ let ``initialOptimizations 04``() =
     let availableOptimizations = getInitOptimizations "[a-z]shing"
     let optimizations = availableOptimizations[StartSearchOptimization.StringEnd]
     match optimizations with
-    | Optimizations.InitialOptimizations.StringPrefix(prefix,_) ->
+    | Optimizations.InitialOptimizations.StringPrefix(_, prefix,_) ->
         Assert.Equal(5,prefix.Length)
     | _ -> failwith "invalid optimization result"
 

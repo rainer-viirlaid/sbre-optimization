@@ -12,21 +12,22 @@ open System
 type InitialOptimizations<'t> =
     | NoOptimizations
     /// ex. Twain ==> (ε|Twain)
-    | StringPrefix of prefix: Memory<char> * transitionNodeId: int
+    | StringPrefix of priority: float * prefix: Memory<char> * transitionNodeId: int
     | StringPrefixCaseIgnore of
+        priority: float * 
         headSet: SearchValues<char> *
         tailSet: SearchValues<char> *
         prefix: Memory<char> *
         isAscii: bool *
         transitionNodeId: int
-    | StringInPotentialPrefix of prefixString: Memory<char> * matchStartOffset: int * matchEndOffset: int * prefix: struct (int * MintermSearchValues<'t>) array
+    | StringInPotentialPrefix of priority: float * prefixString: Memory<char> * matchStartOffset: int * matchEndOffset: int * prefix: struct (int * MintermSearchValues<'t>) array
     /// | StringPrefixCaseIgnore of engine:System.Text.RegularExpressions.Regex * transitionNodeId:int
-    | SearchValuesPrefix of prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t> * transitionNodeId: int
+    | SearchValuesPrefix of priority: float * prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t> * transitionNodeId: int
     /// potential start prefix from searchvalues
-    | SearchValuesPotentialStart of prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t>
-    | WeightedSearchValuesPrefix of weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int * transitionNodeId: int
-    | WeightedSearchValuesPotentialStart of weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int
-    | AlternationBestSet of specialSet: SearchValues<char> * branches: Dictionary<char, (struct (int * MintermSearchValues<'t>) array * int * int) array>
+    | SearchValuesPotentialStart of priority: float * prefix: Memory<MintermSearchValues<'t>> * tsetprefix: Memory<'t>
+    | WeightedSearchValuesPrefix of priority: float * weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int * transitionNodeId: int
+    | WeightedSearchValuesPotentialStart of priority: float * weightedPrefix: struct (int * MintermSearchValues<'t>) array * fullPrefixLength: int
+    | AlternationBestSet of priority: float * specialSet: SearchValues<char> * specialChars: char array * branches: Dictionary<char, (struct (int * MintermSearchValues<'t>) array * int * int) array>
     | AlternationBestSetStrings of specialSet: SearchValues<char> * branches: Dictionary<char, (string * int * int) array>
     // just a single set like [ae]
     // | SinglePotentialStart of prefix: SearchValues<char> * inverted: bool
@@ -411,8 +412,9 @@ let findInitialOptimizations
                         c
                         trueStarredNode
                         (List.take singleCharPrefixes.Length exactPrefix)
+                let priority = calculateStringWeight (singleCharPrefixes.ToString()) characterWeights
 
-                availableOptimizations.Add(StartSearchOptimization.StringEnd, InitialOptimizations.StringPrefix(singleCharPrefixes, nodeToId applied))
+                availableOptimizations.Add(StartSearchOptimization.StringEnd, InitialOptimizations.StringPrefix(priority, singleCharPrefixes, nodeToId applied))
             else
                 let caseInsensitivePrefixes =
                     exactPrefix
@@ -469,18 +471,29 @@ let findInitialOptimizations
                         exactPrefix |> List.last |> c.MintermSearchValues |> (fun v -> v.SearchValues)
 
                     let allAscii = caseInsensitivePrefixes |> Memory.forall Char.IsAscii
+                    
+                    // This may need to be changed
+                    let priority = calculateStringWeight (caseInsensitivePrefixes.ToString().ToUpper()) characterWeights +
+                                   calculateStringWeight (caseInsensitivePrefixes.ToString().ToLower()) characterWeights
 
                     availableOptimizations.Add(StartSearchOptimization.StringEndCaseIgnore,
                                                InitialOptimizations.StringPrefixCaseIgnore(
-                                                   headSet, tailSet, caseInsensitivePrefixes, allAscii, nodeToId applied))
+                                                   priority ,headSet, tailSet, caseInsensitivePrefixes, allAscii, nodeToId applied))
             
             let applied = Optimizations.applyPrefixSets getNonInitialDerivative c trueStarredNode exactPrefix
-
+            
             let searchPrefix = exactPrefix |> Seq.map c.MintermSearchValues |> Seq.toArray
-            availableOptimizations.Add(StartSearchOptimization.ExactSets, InitialOptimizations<'t>.SearchValuesPrefix(Memory(searchPrefix), Memory(Array.ofSeq exactPrefix), nodeToId applied))
+            let exactPriority = match searchPrefix[0].CharactersInMinterm with
+                                | Some(chars) -> calculateWeightFromPreset (chars.ToArray(), characterWeights)
+                                | None -> float Single.MaxValue
+            availableOptimizations.Add(StartSearchOptimization.ExactSets, InitialOptimizations<'t>.SearchValuesPrefix(exactPriority, Memory(searchPrefix), Memory(Array.ofSeq exactPrefix), nodeToId applied))
             
             let weightedSets = reorderPrefixCustomWeights characterWeights (exactPrefix |> List.toArray |> Array.rev) c
-            availableOptimizations.Add(StartSearchOptimization.WeightedExactSets, InitialOptimizations.WeightedSearchValuesPrefix(weightedSets, exactPrefix.Length, nodeToId applied))
+            let struct (_, bestSet) = weightedSets[0]
+            let weightedExactPriority = match bestSet.CharactersInMinterm with
+                                        | Some(chars) -> calculateWeightFromPreset (chars.ToArray(), characterWeights)
+                                        | None -> float Single.MaxValue
+            availableOptimizations.Add(StartSearchOptimization.WeightedExactSets, InitialOptimizations.WeightedSearchValuesPrefix(weightedExactPriority, weightedSets, exactPrefix.Length, nodeToId applied))
 
         let approximatePrefix = Optimizations.calcPotentialMatchStart getNonInitialDerivative nodeToStateFlags c node
         if approximatePrefix.Length > 0 then
@@ -520,10 +533,17 @@ let findInitialOptimizations
             //     InitialOptimizations.SetsPotentialStart(mem)
             
             let searchPrefix = approximatePrefix |> Seq.map c.MintermSearchValues |> Seq.toArray |> Memory
-            availableOptimizations.Add(StartSearchOptimization.ApproximateSets, InitialOptimizations.SearchValuesPotentialStart(searchPrefix, Memory(Seq.toArray approximatePrefix)))
+            let nonWeightedPriority = match (searchPrefix.ToArray()[0]).CharactersInMinterm with
+                                        | Some(chars) -> calculateWeightFromPreset (chars.ToArray(), characterWeights)
+                                        | None -> float Single.MaxValue
+            availableOptimizations.Add(StartSearchOptimization.ApproximateSets, InitialOptimizations.SearchValuesPotentialStart(nonWeightedPriority, searchPrefix, Memory(Seq.toArray approximatePrefix)))
             
             let weightedSets = reorderPrefixCustomWeights characterWeights (approximatePrefix |> List.toArray |> Array.rev) c
-            availableOptimizations.Add(StartSearchOptimization.WeightedApproximateSets, InitialOptimizations.WeightedSearchValuesPotentialStart(weightedSets, approximatePrefix.Length))
+            let struct (_, bestSet) = weightedSets[0]
+            let weightedPriority = match bestSet.CharactersInMinterm with
+                                        | Some(chars) -> calculateWeightFromPreset (chars.ToArray(), characterWeights)
+                                        | None -> float Single.MaxValue
+            availableOptimizations.Add(StartSearchOptimization.WeightedApproximateSets, InitialOptimizations.WeightedSearchValuesPotentialStart(weightedPriority, weightedSets, approximatePrefix.Length))
             
             let mutable potentialStrings: List<string * int> = List()
             let mutable searchStr = ""
@@ -546,16 +566,17 @@ let findInitialOptimizations
                 potentialStrings.Add(searchStr, searchPrefix.Length - 1)
             
             if (potentialStrings.Count <> 0) then
-                let selectedStr, matchEndOffset = potentialStrings |> Seq.reduce (fun (s1, o1) (s2, o2) ->
-                    if s1.Length > s2.Length then (s1, o1) else (s2, o2))
+                let selectedStr, matchEndOffset, _ = potentialStrings |> Seq.map (fun (s, o) -> (s, o, calculateStringWeight s characterWeights)) |> Seq.reduce (fun (s1, o1, w1) (s2, o2, w2) ->
+                    if w1 < w2 then (s1, o1, w1) else (s2, o2, w2))
                 let remainingSets = searchPrefix.ToArray() |> Array.rev |> Array.mapi (fun i charSet ->
                     let min = searchPrefix.Length - matchEndOffset - 1
                     let max = min + selectedStr.Length - 1
                     if i < min || i > max then Some(struct (i, charSet)) else None)
                                     |> Array.choose id
                 let matchStartOffset = remainingSets.Length - (matchEndOffset - selectedStr.Length + 1)
+                let priority = calculateStringWeight selectedStr characterWeights
                 
-                availableOptimizations.Add(StartSearchOptimization.StringInside, InitialOptimizations.StringInPotentialPrefix(selectedStr.ToCharArray().AsMemory(), matchStartOffset, matchEndOffset, remainingSets))
+                availableOptimizations.Add(StartSearchOptimization.StringInside, InitialOptimizations.StringInPotentialPrefix(priority, selectedStr.ToCharArray().AsMemory(), matchStartOffset, matchEndOffset, remainingSets))
             
             ()
          
@@ -1055,11 +1076,11 @@ let inferOverrideRegex
     else
         match lengthLookup, initialOptimizations with
         | LengthLookup.FixedLength(fl),
-          InitialOptimizations.StringPrefixCaseIgnore(headSet, tailSet, prefix, ascii, _) when
+          InitialOptimizations.StringPrefixCaseIgnore(_, headSet, tailSet, prefix, ascii, _) when
             fl = prefix.Length
             ->
             Some(OverrideRegex.FixedLengthStringCaseIgnore(headSet, prefix, ascii))
-        | LengthLookup.FixedLength(fl), InitialOptimizations.StringPrefix(prefix, _) when
+        | LengthLookup.FixedLength(fl), InitialOptimizations.StringPrefix(_, prefix, _) when
             fl = prefix.Length
             ->
             Some(OverrideRegex.FixedLengthString(prefix))
@@ -1215,9 +1236,14 @@ let rec findAlternationBranches
              |> Array.map (fun (s1, s2) -> Array.concat [| s1; s2 |])
     | RegexNode.Singleton charSet ->
         [| [| charSet |] |]
-    | RegexNode.Loop(_, low, _, _) ->
+    | RegexNode.Loop(node, low, up, _) ->
         if low = 0 && atBeginning then
             [|[||]|]
+        else if low <> 0 && low = up then
+            match node with
+            | RegexNode.Singleton charSet ->
+                [| [| charSet |] |> Array.replicate low |> Array.concat |]
+            | _ -> [||]
         else
             [||]
     | RegexNode.Epsilon ->
@@ -1272,7 +1298,8 @@ let calculateAlternationInitialOptimization
                                               weights
         if rarestChars.Count <> 0 then
             let sv = SearchValues.Create(String.Join<char>("", rarestChars))
-            Some(InitialOptimizations.AlternationBestSet(sv, charToBranches))
+            let priority = calculateWeightFromPreset(rarestChars |> Seq.toArray, weights)
+            Some(InitialOptimizations.AlternationBestSet(priority, sv, Array.ofSeq rarestChars, charToBranches))
         else
             None
     else
@@ -1287,3 +1314,24 @@ let recalculateAlternationInitialOptimization
     let rarestChars, charToBranches = calculateAlternationInitialOptimizationStringsInner branches weights (fun _ -> 0.0)
     let sv = SearchValues.Create(String.Join<char>("", rarestChars))
     InitialOptimizations.AlternationBestSetStrings(sv, charToBranches)
+
+
+
+let calculateStringWeight (searchStr: string) (weights: IDictionary<char, float>) =
+    let chars = searchStr.ToCharArray()
+    let mult = chars |> Array.map (fun c ->
+               if weights.ContainsKey(c) then
+                   weights[c] / (float 100)
+                else 0
+               )
+               |> Array.reduce (*)
+    let sum = chars |> Array.map (fun c ->
+               if weights.ContainsKey(c) then
+                   weights[c] / (float 100)
+                else 0
+               )
+               |> Array.reduce (+)
+    if sum = 0 then
+        0
+    else
+        mult / sum * (float 100)

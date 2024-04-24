@@ -118,7 +118,7 @@ let assertPotentialStart pattern expected =
             (Dictionary())
     let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.ApproximateSets))
     match optimizations with
-    | Optimizations.InitialOptimizations.SearchValuesPotentialStart(_,prefix) ->
+    | Optimizations.InitialOptimizations.SearchValuesPotentialStart(_, _,prefix) ->
         let prefixString = Optimizations.printPrefixSets matcher.Cache (prefix.ToArray() |> Seq.toList)
         Assert.Equal(expected, prefixString)
     | _ -> failwith $"invalid optimization result: {optimizations}"
@@ -140,12 +140,12 @@ let assertPrefixLength pattern expected =
             (Dictionary())
     if availableOptimizations.ContainsKey(Optimizations.StartSearchOptimization.ApproximateSets) then
         match availableOptimizations[Optimizations.StartSearchOptimization.ApproximateSets] with
-        | Optimizations.InitialOptimizations.SearchValuesPotentialStart(prefix,_) ->
+        | Optimizations.InitialOptimizations.SearchValuesPotentialStart(_, prefix,_) ->
             Assert.Equal(expected, prefix.Length)
         | _ -> failwith "key has wrong value"
     else if availableOptimizations.ContainsKey(Optimizations.StartSearchOptimization.ExactSets) then
         match availableOptimizations[Optimizations.StartSearchOptimization.ExactSets] with
-        | Optimizations.InitialOptimizations.SearchValuesPrefix(prefix, _,_) ->
+        | Optimizations.InitialOptimizations.SearchValuesPrefix(_, prefix, _,_) ->
             Assert.Equal(expected, prefix.Length)
         | _ -> failwith "key has wrong value"
     else
@@ -168,7 +168,7 @@ let assertSetsPrefix pattern expected =
             (Dictionary())
     let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.ExactSets))
     match optimizations with
-    | Optimizations.InitialOptimizations.SearchValuesPrefix(prefix, _, transId) ->
+    | Optimizations.InitialOptimizations.SearchValuesPrefix(_, prefix, _, transId) ->
         let prefixString = Optimizations.printPrefixSets matcher.Cache (prefix.ToArray() |> Seq.map (fun v -> v.Minterm) |>  Seq.toList)
         Assert.Equal(expected, prefixString)
     | _ -> failwith $"invalid optimization result: {optimizations}"
@@ -189,7 +189,7 @@ let assertStringPrefix pattern expected =
             (Dictionary())
     let optimizations = snd (availableOptimizations.TryGetValue(Optimizations.StartSearchOptimization.StringEnd))
     match optimizations with
-    | Optimizations.InitialOptimizations.StringPrefix(prefix, transId) ->
+    | Optimizations.InitialOptimizations.StringPrefix(_, prefix, transId) ->
         let prefixString = prefix.ToString()
         Assert.Equal(expected, prefixString)
     | _ -> failwith $"invalid optimization result: {optimizations}"

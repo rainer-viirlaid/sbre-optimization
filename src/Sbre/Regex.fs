@@ -2,6 +2,7 @@ namespace Sbre
 
 open System
 open System.Buffers
+open System.Collections
 open System.Collections.Generic
 open System.Globalization
 open System.Numerics
@@ -638,11 +639,68 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
             reverseNode
             reverseTrueStarredNode
             (Dictionary())
+    
+    let _selectOptimization() =
+        let mutable stringOptimization = StartSearchOptimization.NoOptimization
+        let mutable stringPriority = float Single.MaxValue
+        
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.StringEndCaseIgnore) then
+            match _availableInitialOptimizations[StartSearchOptimization.StringEndCaseIgnore] with
+                | InitialOptimizations.StringPrefixCaseIgnore(priority, _, _, _, _, _) ->
+                    stringOptimization <- StartSearchOptimization.StringEndCaseIgnore
+                    stringPriority <- priority
+                | _ -> failwith "wrong value in dictionary"
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.StringEnd) then
+            match _availableInitialOptimizations[StartSearchOptimization.StringEnd] with
+                | InitialOptimizations.StringPrefix(priority, _, _) ->
+                    if stringPriority > priority then
+                        stringOptimization <- StartSearchOptimization.StringEnd
+                        stringPriority <- priority
+                | _ -> failwith "wrong value in dictionary"
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.StringInside) then
+            match _availableInitialOptimizations[StartSearchOptimization.StringInside] with
+                | InitialOptimizations.StringInPotentialPrefix(priority, _, _, _, _) ->
+                    if stringPriority > priority then
+                        stringOptimization <- StartSearchOptimization.StringInside
+                        stringPriority <- priority
+                | _ -> failwith "wrong value in dictionary"
+            
+        let mutable setsOptimization = StartSearchOptimization.NoOptimization
+        let mutable setsPriority = float Single.MaxValue
+        
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.WeightedApproximateSets) then
+            match _availableInitialOptimizations[StartSearchOptimization.WeightedApproximateSets] with
+                | InitialOptimizations.WeightedSearchValuesPotentialStart(priority, _, _) ->
+                    if setsPriority > priority then
+                        setsOptimization <- StartSearchOptimization.WeightedApproximateSets
+                        setsPriority <- priority
+                | _ -> failwith "wrong value in dictionary"
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.WeightedExactSets) then
+            match _availableInitialOptimizations[StartSearchOptimization.WeightedExactSets] with
+                | InitialOptimizations.WeightedSearchValuesPrefix(priority, _, _, _) ->
+                    if setsPriority > priority then
+                        setsOptimization <- StartSearchOptimization.WeightedExactSets
+                        setsPriority <- priority
+                | _ -> failwith "wrong value in dictionary"
+        if _availableInitialOptimizations.ContainsKey(StartSearchOptimization.AlternationSpecialSet) then
+            match _availableInitialOptimizations[StartSearchOptimization.AlternationSpecialSet] with
+                | InitialOptimizations.AlternationBestSet(priority, _, _, _) ->
+                    if setsPriority > priority then
+                        setsOptimization <- StartSearchOptimization.AlternationSpecialSet
+                        setsPriority <- priority
+                | _ -> failwith "wrong value in dictionary"
+        
+        if stringPriority < setsPriority then
+            stringOptimization
+        else
+            setsOptimization
+    
                                          
-    // TODO: select best optimization   
-    let mutable _initialOptimization = _availableInitialOptimizations[StartSearchOptimization.NoOptimization]
+    let mutable _initialOptimization = _availableInitialOptimizations[_selectOptimization()]
     
     let mutable _lastAlternationMatch = -1
+    
+    let mutable _selectOptimizationAutomatically = true
 
     let _lengthLookup =
         // expensive for very large regexes
@@ -660,11 +718,15 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
     let mutable _regexOverride =
         inferOverrideRegex _initialOptimization _lengthLookup _cache R_canonical
         
-    member this.SetStartSearchOptimization(optimizationType: StartSearchOptimization) =
+    let _setOptimization(optimizationType: StartSearchOptimization) =
         if _availableInitialOptimizations.ContainsKey(optimizationType) then
             _initialOptimization <- _availableInitialOptimizations[optimizationType]
             _regexOverride <- inferOverrideRegex _initialOptimization _lengthLookup _cache R_canonical
         ()
+        
+    member this.SetStartSearchOptimization(optimizationType: StartSearchOptimization) =
+        _selectOptimizationAutomatically <- false
+        _setOptimization(optimizationType)
                 
     member this.SetCharacterWeights(weights: IDictionary<char, float>) =
         _availableInitialOptimizations <-
@@ -680,12 +742,14 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 reverseTrueStarredNode
                 weights
 
-        match _initialOptimization with
-        | InitialOptimizations.WeightedSearchValuesPrefix _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedExactSets)
-        | InitialOptimizations.WeightedSearchValuesPotentialStart _ -> this.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
-        | InitialOptimizations.AlternationBestSet _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
-        // | InitialOptimizations.AlternationBestSetStrings _ -> this.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSetStrings)
-        | _ -> ()
+        if _selectOptimizationAutomatically then
+            _setOptimization(_selectOptimization())
+        else
+            match _initialOptimization with
+            | InitialOptimizations.WeightedSearchValuesPrefix _ -> _setOptimization(StartSearchOptimization.WeightedExactSets)
+            | InitialOptimizations.WeightedSearchValuesPotentialStart _ -> _setOptimization(StartSearchOptimization.WeightedApproximateSets)
+            | InitialOptimizations.AlternationBestSet _ -> _setOptimization(StartSearchOptimization.AlternationSpecialSet)
+            | _ -> ()
 
     member this.IsMatchRev(loc: byref<Location>) : bool =
         assert (loc.Position > -1)
@@ -966,7 +1030,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 
     member this.TrySkipInitialRev(loc: byref<Location>, currentStateId: byref<int>) : bool =
         match _initialOptimization with
-        | InitialOptimizations.StringPrefix(prefix, transitionNodeId) ->
+        | InitialOptimizations.StringPrefix(_, prefix, transitionNodeId) ->
             let slice = loc.Input.Slice(0, loc.Position)
             let resultStart = slice.LastIndexOf(prefix.Span)
 
@@ -988,7 +1052,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         //     else
         //         loc.Position <- resultStart + 1
         //         false
-        | InitialOptimizations.StringPrefixCaseIgnore(headSet,
+        | InitialOptimizations.StringPrefixCaseIgnore(_, headSet,
                                                       tailSet,
                                                       prefix,
                                                       ascii,
@@ -1024,7 +1088,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 currentStateId <- transitionNodeId
                 loc.Position <- resultStart
                 true
-        | InitialOptimizations.SearchValuesPrefix(prefix, tsets, transitionNodeId) ->
+        | InitialOptimizations.SearchValuesPrefix(_, prefix, tsets, transitionNodeId) ->
             let skipResult =
                 _cache.TryNextStartsetLocationArrayReversed(&loc, prefix.Span)
 
@@ -1038,7 +1102,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 // no matches remaining
                 loc.Position <- Location.final loc
                 false
-        | InitialOptimizations.SearchValuesPotentialStart(prefix, _) ->
+        | InitialOptimizations.SearchValuesPotentialStart(_, prefix, _) ->
             let skipResult =
                 _cache.TryNextStartsetLocationArrayReversed(&loc, prefix.Span)
 
@@ -1050,7 +1114,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 // no matches remaining
                 loc.Position <- Location.final loc
                 false
-        | InitialOptimizations.WeightedSearchValuesPrefix(weightedPrefix, fullPrefixLength, transitionNodeId) ->
+        | InitialOptimizations.WeightedSearchValuesPrefix(_, weightedPrefix, fullPrefixLength, transitionNodeId) ->
             let skipResult =
                 _cache.TryNextStartsetLocationReversedWeighted(&loc, weightedPrefix, fullPrefixLength)
 
@@ -1070,7 +1134,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 // no matches remaining
                 loc.Position <- Location.final loc
                 false
-        | InitialOptimizations.WeightedSearchValuesPotentialStart(weightedPrefix, fullPrefixLength) ->
+        | InitialOptimizations.WeightedSearchValuesPotentialStart(_, weightedPrefix, fullPrefixLength) ->
             let skipResult =
                 _cache.TryNextStartsetLocationReversedWeighted(&loc, weightedPrefix, fullPrefixLength)
 
@@ -1082,7 +1146,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 // no matches remaining
                 loc.Position <- Location.final loc
                 false
-        | InitialOptimizations.AlternationBestSet(rarestCharsSV, charToBranches) ->
+        | InitialOptimizations.AlternationBestSet(_, rarestCharsSV, _, charToBranches) ->
             let skipResult =
                 _cache.TryNextStartsetLocationReversedAlternation(&loc, &rarestCharsSV, charToBranches, _lastAlternationMatch)
             match skipResult with
@@ -1106,7 +1170,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 // no matches remaining
                 loc.Position <- Location.final loc
                 false
-        | InitialOptimizations.StringInPotentialPrefix(prefixString, matchStartOffset, matchEndOffset, remainingSets) -> 
+        | InitialOptimizations.StringInPotentialPrefix(_, prefixString, matchStartOffset, matchEndOffset, remainingSets) -> 
             let skipResult =
                 _cache.TryNextStartsetLocationReversedSubstring(&loc, prefixString, matchStartOffset, matchEndOffset, remainingSets)
 

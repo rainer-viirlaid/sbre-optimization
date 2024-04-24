@@ -150,7 +150,7 @@ type BenchmarkConfig() as self =
 
 [<Config(typedefof<BenchmarkConfig>)>]
 [<MemoryDiagnoser(true)>]
-// [<ShortRunJob>]
+[<ShortRunJob>]
 type PrefixCharsetSearch () =
 
     [<Params(
@@ -190,7 +190,8 @@ type PrefixCharsetSearch () =
 
     [<GlobalSetup(Target = "Alternation")>]
     member this.AlternationSetup() =
-        this.regex <- Regex(this.rs)
+        this.regex <- Regex(Patterns.SHERLOCK)
+        // this.regex <- Regex(this.rs)
         this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
 
@@ -198,12 +199,15 @@ type PrefixCharsetSearch () =
     member this.Alternation() =
         this.regex.Count(testInput)
         
-        
+    
         
     
     member this.ManualTesting() =
-        this.AlternationSetup()
-        let c = this.Alternation()
+        // this.AlternationSetup()
+        // let c = this.Alternation()
+        
+        this.regex <- Regex(Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE)
+        this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
         ()
     
     member this.MatchCountTesting() =

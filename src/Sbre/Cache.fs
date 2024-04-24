@@ -407,7 +407,7 @@ type RegexCache<
 
                 if fullMatch <> -1 then
                     searching <- false
-                    result <- ValueSome((fullMatch, curMatch))
+                    result <- ValueSome(struct (fullMatch, curMatch))
         result
 
     
