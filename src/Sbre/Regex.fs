@@ -625,7 +625,6 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
     let DFA_R_noPrefix =
         _getOrCreateState(reverseTrueStarredNode, _noprefix, false).Id
 
-
 #if OPTIMIZE
     let mutable _availableInitialOptimizations =
         findInitialOptimizations
@@ -722,6 +721,21 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         if _availableInitialOptimizations.ContainsKey(optimizationType) then
             _initialOptimization <- _availableInitialOptimizations[optimizationType]
             _regexOverride <- inferOverrideRegex _initialOptimization _lengthLookup _cache R_canonical
+        ()
+        
+    
+    member this.SetWeightsFromText(input: ReadOnlySpan<char>, numberOfChars: int) =
+        let mutable weights: IDictionary<char, float> = Dictionary()
+        let step = max ((input.Length - 1) / numberOfChars) 1
+        for i in 0..numberOfChars - 1 do
+            let character = input[i * step]
+            if not (weights.ContainsKey(character)) then
+                weights[character] <- 1
+            else
+                weights[character] <- weights[character] + float 1
+        for character in weights.Keys do
+            weights[character] <- weights[character] / float numberOfChars * float 100
+        this.SetCharacterWeights(weights)
         ()
         
     member this.SetStartSearchOptimization(optimizationType: StartSearchOptimization) =
@@ -869,7 +883,11 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
 
     /// counts the number of matches
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-    override this.Count(input) = this.llmatch_all_count_only input
+    override this.Count(input) =
+        if input.Length > 10_000 then
+            let symbolCount = min 10_000 (int (float input.Length * 0.01))
+            this.SetWeightsFromText(input, symbolCount)
+        this.llmatch_all_count_only input
 
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member this.CreateStartset(state: MatchState<'t>, initial: bool) =

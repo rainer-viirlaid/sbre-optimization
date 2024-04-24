@@ -28,8 +28,9 @@ let subtitlesMed = __SOURCE_DIRECTORY__ + "/data/en-medium.txt" |> System.IO.Fil
 // let rust = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
 
 let testInput =
-                // twain
-                sherlock |> String.replicate 100
+                twain
+                // sherlock |> String.replicate 100
+                // "a" |> String.replicate 10_000_000
                 // rust
                 // subtitlesMed
 
@@ -87,7 +88,10 @@ module Patterns =
     let HUCK_SAW = @"Huck[a-zA-Z]+|Saw[a-zA-Z]+"
     
     [<Literal>]
-    let WORD_END = @"\b\w+nn\b" // Similar but differentx: \w+nn\W
+    let WORD_END_ORIGINAL = @"\b\w+nn\b"
+    
+    [<Literal>]
+    let WORD_END = @"\w+nn\W" // Similar to \b\w+nn\b but without anchors(lookarounds) that prevent skipping
 
     [<Literal>]
     let AQ_X = @"[a-q][^u-z]{13}x"
@@ -156,30 +160,31 @@ type PrefixCharsetSearch () =
     [<Params(
         // Twain regexes
         
-        // Patterns.TWAIN,
-        // Patterns.TWAIN_CASEIGNORE,
-        // Patterns.AZ_SHING,
-        // Patterns.HUCK_SAW,
-        // Patterns.WORD_END,
-        // Patterns.AQ_X,
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.TOM_RIVER,
-        // Patterns.AZ_ING,
-        // Patterns.AZ_ING_SPACES,
-        // Patterns.AZ_AWYER_INN,
-        // Patterns.QUOTES,
-        //
-        // Patterns.HAVE_THERE,
-        // Patterns.HUCK_AZ,
-        // Patterns.AZ_UCK_AZ,
-        // Patterns.H_AZ_CK_AZ
+        Patterns.TWAIN,
+        Patterns.TWAIN_CASEIGNORE,
+        Patterns.AZ_SHING,
+        Patterns.HUCK_SAW,
+        Patterns.WORD_END_ORIGINAL,
+        Patterns.WORD_END,
+        Patterns.AQ_X,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_RIVER,
+        Patterns.AZ_ING,
+        Patterns.AZ_ING_SPACES,
+        Patterns.AZ_AWYER_INN,
+        Patterns.QUOTES,
+        
+        Patterns.HAVE_THERE,
+        Patterns.HUCK_AZ,
+        Patterns.AZ_UCK_AZ,
+        Patterns.H_AZ_CK_AZ
         
         // Rebar regexes
         
-        Patterns.SHERLOCK
+        // Patterns.SHERLOCK
         // Patterns.SHERLOCK_CASEIGNORE
     )>]
     member val rs: string = "" with get, set
@@ -188,16 +193,22 @@ type PrefixCharsetSearch () =
     
     
 
-    [<GlobalSetup(Target = "Alternation")>]
-    member this.AlternationSetup() =
-        this.regex <- Regex(Patterns.SHERLOCK)
-        // this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
-        this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+    [<GlobalSetup(Target = "Automatic")>]
+    member this.AutomaticSetup() =
+        this.regex <- Regex(this.rs)
 
     [<Benchmark>]
-    member this.Alternation() =
+    member this.Automatic() =
         this.regex.Count(testInput)
+
+    // [<GlobalSetup(Target = "Weighted")>]
+    // member this.WeightedSetup() =
+    //     this.regex <- Regex(this.rs)
+    //     this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedExactSets)
+    //
+    // [<Benchmark>]
+    // member this.Weighted() =
+    //     this.regex.Count(testInput)
         
     
         
@@ -206,8 +217,13 @@ type PrefixCharsetSearch () =
         // this.AlternationSetup()
         // let c = this.Alternation()
         
-        this.regex <- Regex(Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE)
-        this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+        // this.regex <- Regex(Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE)
+        // this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+        
+        // let a = this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
+        
+        this.regex <- Regex(Patterns.WORD_END)
+        let c = this.regex.Count(testInput)
         ()
     
     member this.MatchCountTesting() =
@@ -246,7 +262,7 @@ type PrefixCharsetSearch () =
    
 [<Config(typedefof<BenchmarkConfig>)>]
 [<MemoryDiagnoser(true)>]
-// [<ShortRunJob>]
+[<ShortRunJob>]
 type WeightCalculation () =
     
     [<Params(
@@ -257,23 +273,15 @@ type WeightCalculation () =
     )>]
     member val symbolCount: int = 1 with get, set
     
-    member val runtimeWeights: Dictionary<Char, int> = Dictionary() with get, set
+    member val regex: Regex = Regex("") with get, set
         
     [<GlobalSetup(Target = "CalculatingWeights")>]
     member this.CalculatingWeightsSetup() =
-        this.runtimeWeights <- Dictionary()
+        this.regex <- Regex(Patterns.TWAIN)
 
     [<Benchmark>]
     member this.CalculatingWeights() =
-        let textSpan = testInput.AsSpan()
-        let step = (textSpan.Length - 1) / this.symbolCount
-        for i in 0..this.symbolCount do
-            let character = textSpan[i * step]
-            if not (this.runtimeWeights.ContainsKey(character)) then
-                this.runtimeWeights[character] <- 1
-            else
-                this.runtimeWeights[character] <- this.runtimeWeights[character] + 1
-
+        this.regex.TSetMatcher.SetWeightsFromText(testInput, this.symbolCount)
 
 
    

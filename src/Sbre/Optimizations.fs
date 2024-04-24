@@ -545,11 +545,21 @@ let findInitialOptimizations
                                         | None -> float Single.MaxValue
             availableOptimizations.Add(StartSearchOptimization.WeightedApproximateSets, InitialOptimizations.WeightedSearchValuesPotentialStart(weightedPriority, weightedSets, approximatePrefix.Length))
             
+            ()
+            
+        if exactPrefix.Length > 1 || approximatePrefix.Length > 1 then
+            let selectedPrefix = if approximatePrefix.Length > exactPrefix.Length then approximatePrefix else exactPrefix
+            let searchPrefix = selectedPrefix |> Seq.map c.MintermSearchValues |> Seq.toArray |> Memory
+            
             let mutable potentialStrings: List<string * int> = List()
             let mutable searchStr = ""
             for i in 0..searchPrefix.Length - 1 do
-                let charsOpt = c.MintermChars(approximatePrefix[i])
+                let charsOpt = c.MintermChars(selectedPrefix[i])
                 match charsOpt with
+                | Some _ when c.MintermIsInverted selectedPrefix[i] -> 
+                    if (searchStr <> "") then
+                        potentialStrings.Add(searchStr, i - 1)
+                    searchStr <- ""
                 | None ->
                     if (searchStr <> "") then
                         potentialStrings.Add(searchStr, i - 1)
