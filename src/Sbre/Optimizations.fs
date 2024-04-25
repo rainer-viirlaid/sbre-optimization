@@ -1140,12 +1140,12 @@ let reorderPrefix
             // Throw away weights
             |> Array.map (fun (i, set, _) -> (i, set))
             // Filter out TSets, because they are slow to check
-            |> fun (sets: (int * MintermSearchValues<_>) array) ->
-                let _, bestSetType = sets[0]
-                if bestSetType.Mode = MintermSearchMode.TSet then
-                    sets[0..0]
-                else
-                    sets |> Array.filter (fun (_, set) -> set.Mode <> MintermSearchMode.TSet)
+            // |> fun (sets: (int * MintermSearchValues<_>) array) ->
+            //     let _, bestSetType = sets[0]
+            //     if bestSetType.Mode = MintermSearchMode.TSet then
+            //         sets[0..0]
+            //     else
+            //         sets |> Array.filter (fun (_, set) -> set.Mode <> MintermSearchMode.TSet)
             // Convert to an array of struct tuples
             |> Array.map (fun (i, set) -> struct (i, set))
 
