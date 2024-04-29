@@ -891,7 +891,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
     /// counts the number of matches
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     override this.Count(input) =
-        if _calculateWeightsAutomatically && input.Length > 10_000 then
+        if _calculateWeightsAutomatically && input.Length > 50_000 then
             let symbolCount = min 10_000 (int (float input.Length * 0.01))
             this.SetWeightsFromText(input, symbolCount)
             _calculateWeightsAutomatically <- true
