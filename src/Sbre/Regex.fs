@@ -727,7 +727,7 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         ()
         
     
-    member this.SetWeightsFromText(input: ReadOnlySpan<char>, numberOfChars: int) =
+    member this.FindWeightsFromText(input: ReadOnlySpan<char>, numberOfChars: int) =
         let mutable weights: IDictionary<char, float> = Dictionary()
         let step = max ((input.Length - 1) / numberOfChars) 1
         for i in 0..numberOfChars - 1 do
@@ -738,8 +738,11 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
                 weights[character] <- weights[character] + float 1
         for character in weights.Keys do
             weights[character] <- weights[character] / float numberOfChars * float 100
-        this.SetCharacterWeights(weights)
-        ()
+        weights
+        
+    
+    member this.SetWeightsFromText(input: ReadOnlySpan<char>, numberOfChars: int) =
+        this.SetCharacterWeights(this.FindWeightsFromText(input, numberOfChars))
         
     member this.SetStartSearchOptimization(optimizationType: StartSearchOptimization) =
         _selectOptimizationAutomatically <- false
