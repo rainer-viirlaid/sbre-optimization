@@ -9,7 +9,8 @@ open Sbre.Benchmarks
 [<EntryPoint>]
 let main argv =
     match Environment.GetCommandLineArgs() |> Seq.last with
-    | "prefixW" -> BenchmarkRunner.Run(typeof<Optimizations.MatchStartOptimization>) |> ignore
+    | "prefixTwain" -> BenchmarkRunner.Run(typeof<Optimizations.MatchStartOptimizationTwain>) |> ignore
+    | "prefixTamm" -> BenchmarkRunner.Run(typeof<Optimizations.MatchStartOptimizationTammsaare>) |> ignore
     | _ ->
         ()
     0

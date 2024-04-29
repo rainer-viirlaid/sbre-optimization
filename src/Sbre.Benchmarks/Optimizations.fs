@@ -17,36 +17,17 @@ open Sbre.Pat
 open Sbre.Types
 
 let twain = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
-// let sherlock = __SOURCE_DIRECTORY__ + "/data/sherlock.txt" |> System.IO.File.ReadAllText
-// let rust = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
+let tammsaare = __SOURCE_DIRECTORY__ + "/data/Tammsaare Kollektsioon.txt" |> System.IO.File.ReadAllText
 
-let testInput =
-                // rust
-                twain
-                // sherlock
-                // |> String.replicate 10
-                // |> String.replicate 100
+let estWikiLocation = __SOURCE_DIRECTORY__ + "/data/estWikiLoc.txt" |> System.IO.File.ReadAllText
+let estWiki = if estWikiLocation <> "" then estWikiLocation
+                                            |> System.IO.File.ReadAllBytes
+                                            |> System.Text.Encoding.UTF8.GetChars
+                else [||]
 
 
-module Patterns =
+module PatternsTwain =
     
-    // Patterns from Rebar
-
-    // rust-src-tools-3b0d4813.txt
-    // TODO: bitvector error
-    // let DATE = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-date.txt" )
-    
-    // rust-src-tools-3b0d4813.txt
-    // let URL = System.IO.File.ReadAllText(__SOURCE_DIRECTORY__ + "/data/pattern-url.txt" )
-    
-    [<Literal>]
-    let SHERLOCK = @"Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty"
-    
-    [<Literal>]
-    let SHERLOCK_CASEIGNORE = @"(?i)Sherlock Holmes|John Watson|Irene Adler|Inspector Lestrade|Professor Moriarty"
-
-    // Twain patterns from https://zherczeg.github.io/sljit/regex_perf.html
-
     [<Literal>]
     let TWAIN = @"Twain"
 
@@ -60,7 +41,7 @@ module Patterns =
     let HUCK_SAW = @"Huck[a-zA-Z]+|Saw[a-zA-Z]+"
     
     [<Literal>]
-    let WORD_END = @"\b\w+nn\b" // Similar but differentx: \w+nn\W
+    let WORD_END = @"\w+nn\W" // Alternative version of \b\w+nn\b
 
     [<Literal>]
     let AQ_X = @"[a-q][^u-z]{13}x"
@@ -92,21 +73,76 @@ module Patterns =
     [<Literal>]
     let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
     
-    // Other patterns for Twain
+    // Extra patterns, some may be left out of the final results
 
     [<Literal>]
-    let HAVE_THERE = @".*have.*&.*there.*"
+    let HUCK_AZ = @"Huck[A-Za-z]+"
 
     [<Literal>]
-    let HUCK_AZ = @"Huck[A-Za-z]"
+    let AZ_UCK_AZ = @"[A-Za-z]uck[A-Za-z]+"
 
     [<Literal>]
-    let AZ_UCK_AZ = @"[A-Za-z]uck[A-Za-z]"
+    let H_AZ_CK_AZ = @"H[A-Za-z]ck[A-Za-z]+"
 
+
+module PatternsTammsaare =
+    
     [<Literal>]
-    let H_AZ_CK_AZ = @"H[A-Za-z]ck[A-Za-z]"
-
-
+    let TAMMSAARE = @"Tammsaare"
+    
+    [<Literal>]
+    let TAMMSAARE_CASEIGNORE = @"(?i)Tammsaare"
+    
+    [<Literal>]
+    let AZ_MINE = @"[a-zšžõäöü]mine"
+    
+    [<Literal>]
+    let ANDR_PEAR_AZ = @"Andr[A-ZŠŽÕÄÖÜa-zšžõäöü]+|Pear[A-ZŠŽÕÄÖÜa-zšžõäöü]+"
+    
+    [<Literal>]
+    let WORD_END = @"\w+nn\W"
+    
+    [<Literal>]
+    let AQ_W = @"[a-q][^u-z]{13}w"
+    
+    [<Literal>]
+    let KARL_ANDRES_PEARU_VANAPAGAN = @"Karl|Andres|Pearu|Vanapagan"
+    
+    [<Literal>]
+    let KARL_ANDRES_PEARU_VANAPAGAN_CASEIGNORE = @"(?i)Karl|Andres|Pearu|Vanapagan"
+    
+    [<Literal>]
+    let D02_KARL_ANDRES_PEARU_VANAPAGAN = @".{0,2}(Karl|Andres|Pearu|Vanapagan)"
+    
+    [<Literal>]
+    let D24_KARL_ANDRES_PEARU_VANAPAGAN = @".{2,4}(Karl|Andres|Pearu|Vanapagan)"
+    
+    [<Literal>]
+    let MADIS_KRAAV = @"Madis.{10,25}kraav|kraav.{10,25}Madis"
+    
+    [<Literal>]
+    let AZ_NE = @"[A-ZŠŽÕÄÖÜa-zšžõäöü]+ne"
+    
+    [<Literal>]
+    let AZ_NE_SPACES = @"\s[A-ZŠŽÕÄÖÜa-zšžõäöü]{0,12}ne\s"
+    
+    [<Literal>]
+    let AZ_EARU_NDRES = @"([A-ZŠŽÕÄÖÜa-zšžõäöü]earu|[A-ZŠŽÕÄÖÜa-zšžõäöü]ndres)\s"
+    
+    [<Literal>]
+    let QUOTES = @"[„""'][^“""']{0,30}[?!\.][“""']"
+    
+    
+module PatternsEstWiki =
+    
+    [<Literal>]
+    let EESTI = @"Eesti"
+    
+    [<Literal>]
+    let ROOTSI = @"Rootsi"
+    
+    
+    
 
 type BenchmarkConfig() as self =
     inherit ManualConfig() 
@@ -124,81 +160,152 @@ type BenchmarkConfig() as self =
 [<Config(typedefof<BenchmarkConfig>)>]
 [<MemoryDiagnoser(true)>]
 // [<ShortRunJob>]
-type MatchStartOptimization () =
+type MatchStartOptimizationTwain () =
     
 
     [<Params(
-        // Twain regexes
-        
-        Patterns.TWAIN,
-        Patterns.TWAIN_CASEIGNORE,
-        Patterns.AZ_SHING,
-        Patterns.HUCK_SAW,
-        // Patterns.WORD_END,
-        Patterns.AQ_X,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        Patterns.TOM_RIVER,
-        Patterns.AZ_ING,
-        Patterns.AZ_ING_SPACES,
-        Patterns.AZ_AWYER_INN,
-        Patterns.QUOTES,
-        
-        Patterns.HAVE_THERE,
-        Patterns.HUCK_AZ,
-        Patterns.AZ_UCK_AZ,
-        Patterns.H_AZ_CK_AZ
-        
-        // Rebar regexes
-        
-        // Patterns.SHERLOCK
-        // Patterns.SHERLOCK_CASEIGNORE
+        PatternsTwain.TWAIN,
+        PatternsTwain.TWAIN_CASEIGNORE,
+        PatternsTwain.AZ_SHING,
+        PatternsTwain.HUCK_SAW,
+        PatternsTwain.WORD_END,
+        PatternsTwain.AQ_X,
+        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN,
+        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        PatternsTwain.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        PatternsTwain.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        PatternsTwain.TOM_RIVER,
+        PatternsTwain.AZ_ING,
+        PatternsTwain.AZ_ING_SPACES,
+        PatternsTwain.AZ_AWYER_INN,
+        PatternsTwain.QUOTES,
+
+        PatternsTwain.HUCK_AZ,
+        PatternsTwain.AZ_UCK_AZ,
+        PatternsTwain.H_AZ_CK_AZ
     )>]
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
     
-
     [<GlobalSetup(Target = "Original")>]
     member this.OriginalSetup() =
         this.regex <- Regex(this.rs)
 
     [<Benchmark>]
     member this.Original() =
-        this.regex.Count(testInput)
+        this.regex.Count(twain)
         
+
+
+[<Config(typedefof<BenchmarkConfig>)>]
+[<MemoryDiagnoser(true)>]
+[<ShortRunJob>]
+type MatchStartOptimizationTammsaare () =
+    
+
+    [<Params(
+        PatternsTammsaare.TAMMSAARE,
+        PatternsTammsaare.TAMMSAARE_CASEIGNORE,
+        PatternsTammsaare.AZ_MINE,
+        PatternsTammsaare.ANDR_PEAR_AZ,
+        PatternsTammsaare.WORD_END,
+        PatternsTammsaare.AQ_W,
+        PatternsTammsaare.KARL_ANDRES_PEARU_VANAPAGAN,
+        PatternsTammsaare.KARL_ANDRES_PEARU_VANAPAGAN_CASEIGNORE,
+        PatternsTammsaare.D02_KARL_ANDRES_PEARU_VANAPAGAN,
+        PatternsTammsaare.D24_KARL_ANDRES_PEARU_VANAPAGAN,
+        PatternsTammsaare.MADIS_KRAAV,
+        PatternsTammsaare.AZ_NE,
+        PatternsTammsaare.AZ_NE_SPACES,
+        PatternsTammsaare.AZ_EARU_NDRES,
+        PatternsTammsaare.QUOTES
+    )>]
+    member val rs: string = "" with get, set
+    
+    member val regex: Regex = Regex("") with get, set
+    
+    [<GlobalSetup(Target = "Original")>]
+    member this.OriginalSetup() =
+        this.regex <- Regex(this.rs)
+
+    [<Benchmark>]
+    member this.Original() =
+        this.regex.Count(tammsaare)
+        
+        
+        
+
+type MatchCountingCorrectness () =
     
     member this.ManualTesting() =
-        this.MatchCountTesting()
+        this.MatchCountTestingTwain()
     
-    member this.MatchCountTesting() =
+    member this.MatchCountTestingTwain() =
         let pats = [|
-            Patterns.TWAIN // 811
-            Patterns.TWAIN_CASEIGNORE // 965
-            Patterns.AZ_SHING // 1540
-            Patterns.HUCK_SAW // 262
-            // Patterns.WORD_END // Broken in this version
-            Patterns.AQ_X // 4094, Rider finds 4081
-            Patterns.TOM_SAWYER_HUCKLEBERRY_FINN // 2598
-            Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE // 4152
-            Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN // 2598
-            Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN // 1976
-            Patterns.TOM_RIVER // 2
-            Patterns.AZ_ING // 78 423 TODO
-            Patterns.AZ_ING_SPACES // 55 248 TODO
-            Patterns.AZ_AWYER_INN // 209
-            Patterns.QUOTES // 8885, Rider finds 8927
+            PatternsTwain.TWAIN             // 811
+            PatternsTwain.TWAIN_CASEIGNORE  // 965
+            PatternsTwain.AZ_SHING          // 1540
+            PatternsTwain.HUCK_SAW          // 262
+            PatternsTwain.WORD_END          // 262
+            PatternsTwain.AQ_X              // 4094, Rider finds 4081
+            PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN            // 2598
+            PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE // 4152
+            PatternsTwain.D02_TOM_SAWYER_HUCKLEBERRY_FINN        // 2598
+            PatternsTwain.D24_TOM_SAWYER_HUCKLEBERRY_FINN        // 1976
+            PatternsTwain.TOM_RIVER         // 2
+            PatternsTwain.AZ_ING            // 78 423, too many for Rider
+            PatternsTwain.AZ_ING_SPACES     // 55 248, too many for Rider
+            PatternsTwain.AZ_AWYER_INN      // 209
+            PatternsTwain.QUOTES            // 8885, Rider finds 8927
            
-            Patterns.HAVE_THERE // 426
-            Patterns.HUCK_AZ // 56
-            Patterns.AZ_UCK_AZ // 706
-            Patterns.H_AZ_CK_AZ // 97
+            PatternsTwain.HUCK_AZ           // 56
+            PatternsTwain.AZ_UCK_AZ         // 706
+            PatternsTwain.H_AZ_CK_AZ        // 97
         |]
         for pat in pats do
-            this.regex <- Regex(pat)
-            let count = this.regex.Count(testInput)
+            let regex = Regex(pat)
+            let count = regex.Count(twain)
             ()
+        for pat in pats do
+            let compiled = System.Text.RegularExpressions.Regex(
+                pat,
+                options = System.Text.RegularExpressions.RegexOptions.Compiled,
+                matchTimeout = TimeSpan.FromMilliseconds(10_000.)
+            )
+            let count = compiled.Count(twain)
+            ()
+    
+    member this.MatchCountTestingTammsaare() =
+        let pats = [|
+            PatternsTammsaare.TAMMSAARE             // 15
+            PatternsTammsaare.TAMMSAARE_CASEIGNORE  // 22
+            PatternsTammsaare.AZ_MINE               // 1603
+            PatternsTammsaare.ANDR_PEAR_AZ          // 3420
+            PatternsTammsaare.WORD_END              // 260, Rider finds 129
+            PatternsTammsaare.AQ_W                  // 2133, Rider finds 2172
+            PatternsTammsaare.KARL_ANDRES_PEARU_VANAPAGAN            // 4049
+            PatternsTammsaare.KARL_ANDRES_PEARU_VANAPAGAN_CASEIGNORE // 4051
+            PatternsTammsaare.D02_KARL_ANDRES_PEARU_VANAPAGAN        // 4049
+            PatternsTammsaare.D24_KARL_ANDRES_PEARU_VANAPAGAN        // 3800
+            PatternsTammsaare.MADIS_KRAAV           // 9
+            PatternsTammsaare.AZ_NE                 // 20994, Too many for Rider
+            PatternsTammsaare.AZ_NE_SPACES          // 8782
+            PatternsTammsaare.AZ_EARU_NDRES         // 1845
+            PatternsTammsaare.QUOTES                // 4923
+        |]
+        for pat in pats do
+            let regex = Regex(pat)
+            let count = regex.Count(tammsaare)
+            ()
+        for pat in pats do
+            let compiled = System.Text.RegularExpressions.Regex(
+                pat,
+                options = System.Text.RegularExpressions.RegexOptions.Compiled,
+                matchTimeout = TimeSpan.FromMilliseconds(10_000.)
+            )
+            let count = compiled.Count(tammsaare)
+            ()
+        
         
 
