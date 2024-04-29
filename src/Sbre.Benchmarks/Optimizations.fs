@@ -232,7 +232,10 @@ type PrefixCharsetSearch () =
         // let a = this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
         this.regex <- Regex("(?i)Tom")
+        // this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         let c = this.regex.Count(testInput)
+        let c1 = this.regex.Count(testInput)
+        let c2 = this.regex.Count(testInput)
         ()
     
     member this.MatchCountTesting() =
