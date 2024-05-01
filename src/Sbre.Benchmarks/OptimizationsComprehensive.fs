@@ -280,13 +280,26 @@ type MatchStartOptimizationTwain () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
+    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
-    [<GlobalSetup(Target = "Original")>]
-    member this.OriginalSetup() =
+    [<GlobalSetup(Target = "OptimizedRESharp")>]
+    member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
     [<Benchmark>]
-    member this.Original() =
+    member this.OptimizedRESharp() =
+        this.regex.Count(twain)
+    
+    [<GlobalSetup(Target = "DotnetCompiled")>]
+    member this.DotnetCompiledSetup() =
+        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.Compiled
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    // [<Benchmark>]
+    member this.DotnetCompiled() =
         this.regex.Count(twain)
         
 
@@ -317,13 +330,26 @@ type MatchStartOptimizationTammsaare () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
+    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
-    [<GlobalSetup(Target = "Original")>]
-    member this.OriginalSetup() =
+    [<GlobalSetup(Target = "OptimizedRESharp")>]
+    member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
     [<Benchmark>]
-    member this.Original() =
+    member this.OptimizedRESharp() =
+        this.regex.Count(tammsaare)
+    
+    [<GlobalSetup(Target = "DotnetCompiled")>]
+    member this.DotnetCompiledSetup() =
+        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.Compiled
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    // [<Benchmark>]
+    member this.DotnetCompiled() =
         this.regex.Count(tammsaare)
         
 
@@ -355,13 +381,26 @@ type MatchStartOptimizationEstWiki () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
+    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
-    [<GlobalSetup(Target = "Original")>]
-    member this.OriginalSetup() =
+    [<GlobalSetup(Target = "OptimizedRESharp")>]
+    member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
     [<Benchmark>]
-    member this.Original() =
+    member this.OptimizedRESharp() =
+        this.regex.Count(estWiki)
+    
+    [<GlobalSetup(Target = "DotnetCompiled")>]
+    member this.DotnetCompiledSetup() =
+        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.Compiled
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    // [<Benchmark>]
+    member this.DotnetCompiled() =
         this.regex.Count(estWiki)
         
 
@@ -392,13 +431,26 @@ type MatchStartOptimizationEngWiki () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
+    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
-    [<GlobalSetup(Target = "Original")>]
-    member this.OriginalSetup() =
+    [<GlobalSetup(Target = "OptimizedRESharp")>]
+    member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
     [<Benchmark>]
-    member this.Original() =
+    member this.OptimizedRESharp() =
+        this.regex.Count(engWiki)
+    
+    [<GlobalSetup(Target = "DotnetCompiled")>]
+    member this.DotnetCompiledSetup() =
+        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.Compiled
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    // [<Benchmark>]
+    member this.DotnetCompiled() =
         this.regex.Count(engWiki)
         
         
