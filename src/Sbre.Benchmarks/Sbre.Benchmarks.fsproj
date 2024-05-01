@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="Compile.fs" />
         <Compile Include="Jobs.fs" />
         <Compile Include="ParagraphOuter.fs" />
         <Compile Include="ParagraphInner.fs" />
