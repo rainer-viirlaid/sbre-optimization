@@ -339,7 +339,7 @@ type MatchStartOptimizationEstWiki () =
         PatternsEstWiki.ROOTSI,
         PatternsEstWiki.EESTI_CASEIGNORE,
         PatternsEstWiki.AZ_EE,
-        // PatternsEstWiki.HELI_AJA_AZ,
+        PatternsEstWiki.HELI_AJA_AZ,
         PatternsEstWiki.AQ_X,
         PatternsEstWiki.TOOMAS_MARGUS_REIN_JAAN,
         PatternsEstWiki.TOOMAS_MARGUS_REIN_JAAN_CASEIGNORE,
