@@ -19,7 +19,7 @@ open Sbre.Types
 let twain = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
 let tammsaare = __SOURCE_DIRECTORY__ + "/data/Tammsaare Kollektsioon.txt" |> System.IO.File.ReadAllText
 
-let estWikiLocation = __SOURCE_DIRECTORY__ + "/data/estWikiLoc.txt" |> System.IO.File.ReadAllText
+let estWikiLocation = __SOURCE_DIRECTORY__ + "/data/estWikiLoc.txt" |> System.IO.File.ReadAllText |> _.Trim()
 let estWiki = if estWikiLocation <> "" then estWikiLocation
                                             |> System.IO.File.ReadAllBytes
                                             |> System.Text.Encoding.UTF8.GetChars
@@ -182,6 +182,57 @@ module PatternsEstWiki =
     
     [<Literal>]
     let CURRENCY = @"\p{Sc}"
+    
+    
+module PatternsEngWiki =
+    
+    // [<Literal>]
+    // let EESTI = @"Eesti"
+    //
+    // [<Literal>]
+    // let ROOTSI = @"Rootsi"
+    //
+    // [<Literal>]
+    // let EESTI_CASEIGNORE = @"(?i)Eesti"
+    //
+    // [<Literal>]
+    // let AZ_EE = @"[a-züõöä]ee"
+    //
+    // [<Literal>]
+    // let HELI_AJA_AZ = @"Heli[a-zA-ZüõöäÜÕÖÄ]+|Aja[a-zA-ZüõöäÜÕÖÄ]+"
+    //
+    // [<Literal>]
+    // let AQ_X = @"[a-q][^u-z]{12}x"
+    //
+    // [<Literal>]
+    // let TOOMAS_MARGUS_REIN_JAAN = @"Toomas|Margus|Rein|Jaan"
+    //
+    // [<Literal>]
+    // let TOOMAS_MARGUS_REIN_JAAN_CASEIGNORE = @"(?i)Toomas|Margus|Rein|Jaan"
+    //
+    // [<Literal>]
+    // let D02_TOOMAS_MARGUS_REIN_JAAN = @".{0,2}Toomas|Margus|Rein|Jaan"
+    //
+    // [<Literal>]
+    // let D24_TOOMAS_MARGUS_REIN_JAAN = @".{2,4}Toomas|Margus|Rein|Jaan"
+    //
+    // [<Literal>]
+    // let EESTI_JOGI = @"Eesti.{10,25}jõgi|jõgi.{10,25}Eesti"
+    //
+    // [<Literal>]
+    // let AZ_TUD = @"[a-zA-ZüõöäÜÕÖÄ]+tud"
+    //
+    // [<Literal>]
+    // let AZ_TUD_SPACES = @"\s[a-zA-ZüõöäÜÕÖÄ]{0,12}tud\s"
+    //
+    // [<Literal>]
+    // let AZ_INA_EIN = @"([A-Za-z]ina|[A-Za-z]ein)\s"
+    //
+    // [<Literal>]
+    // let QUOTES = @"[""'][^""']{0,31}[?!\.][\""']"
+    //
+    // [<Literal>]
+    // let CURRENCY = @"\p{Sc}"
     
     
     
