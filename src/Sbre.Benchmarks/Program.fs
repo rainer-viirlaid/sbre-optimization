@@ -75,6 +75,10 @@ let main argv =
     | "prefix1" -> BenchmarkRunner.Run(typeof<Optimizations.Prefix1>,config) |> ignore
     | "prefixW" -> BenchmarkRunner.Run(typeof<Optimizations.PrefixCharsetSearch>) |> ignore
     | "weightCalc" -> BenchmarkRunner.Run(typeof<Optimizations.WeightCalculation>) |> ignore
+    | "prefixTwain" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationTwain>) |> ignore
+    | "prefixTamm" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationTammsaare>) |> ignore
+    | "prefixEstWiki" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationEstWiki>) |> ignore
+    | "prefixEngWiki" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationEngWiki>) |> ignore
     // ---
     | "learning1" -> BenchmarkRunner.Run(typeof<Learning.Learning1>,config) |> ignore
     | "learning2" -> BenchmarkRunner.Run(typeof<Learning.Learning2>,config) |> ignore

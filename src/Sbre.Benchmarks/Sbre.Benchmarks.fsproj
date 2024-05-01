@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <Compile Include="Jobs.fs" />
+        <Compile Include="OptimizationsComprehensive.fs" />
         <Compile Include="ParagraphOuter.fs" />
         <Compile Include="ParagraphInner.fs" />
         <Compile Include="ParagraphFull.fs" />
