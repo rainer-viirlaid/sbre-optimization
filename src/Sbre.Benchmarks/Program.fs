@@ -12,6 +12,7 @@ let main argv =
     | "prefixTwain" -> BenchmarkRunner.Run(typeof<Optimizations.MatchStartOptimizationTwain>) |> ignore
     | "prefixTamm" -> BenchmarkRunner.Run(typeof<Optimizations.MatchStartOptimizationTammsaare>) |> ignore
     | "prefixEstWiki" -> BenchmarkRunner.Run(typeof<Optimizations.MatchStartOptimizationEstWiki>) |> ignore
+    | "prefixEngWiki" -> BenchmarkRunner.Run(typeof<Optimizations.MatchStartOptimizationEngWiki>) |> ignore
     | _ ->
         ()
     0
