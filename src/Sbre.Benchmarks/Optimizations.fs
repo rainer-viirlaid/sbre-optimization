@@ -186,8 +186,8 @@ module PatternsEstWiki =
     
 module PatternsEngWiki =
     
-    // [<Literal>]
-    // let EESTI = @"Eesti"
+    [<Literal>]
+    let EESTI = @"Eesti"
     //
     // [<Literal>]
     // let ROOTSI = @"Rootsi"
