@@ -300,7 +300,7 @@ type MatchStartOptimizationTwain () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regex.Count(twain)
+        this.regexDotNet.Count(twain)
         
 
 
@@ -350,7 +350,7 @@ type MatchStartOptimizationTammsaare () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regex.Count(tammsaare)
+        this.regexDotNet.Count(tammsaare)
         
 
 
@@ -401,7 +401,7 @@ type MatchStartOptimizationEstWiki () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regex.Count(estWiki)
+        this.regexDotNet.Count(estWiki)
         
 
 
@@ -451,7 +451,7 @@ type MatchStartOptimizationEngWiki () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regex.Count(engWiki)
+        this.regexDotNet.Count(engWiki)
         
         
         
