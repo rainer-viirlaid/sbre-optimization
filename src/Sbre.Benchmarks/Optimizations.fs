@@ -24,6 +24,11 @@ let estWiki = if estWikiLocation <> "" then estWikiLocation
                                             |> System.IO.File.ReadAllBytes
                                             |> System.Text.Encoding.UTF8.GetChars
                 else [||]
+let engWikiLocation = __SOURCE_DIRECTORY__ + "/data/engWikiLoc.txt" |> System.IO.File.ReadAllText |> _.Trim()
+let engWiki = if engWikiLocation <> "" then engWikiLocation
+                                            |> System.IO.File.ReadAllBytes
+                                            |> System.Text.Encoding.UTF8.GetChars
+                else [||]
 
 
 module PatternsTwain =
@@ -187,55 +192,50 @@ module PatternsEstWiki =
 module PatternsEngWiki =
     
     [<Literal>]
-    let EESTI = @"Eesti"
-    //
-    // [<Literal>]
-    // let ROOTSI = @"Rootsi"
-    //
-    // [<Literal>]
-    // let EESTI_CASEIGNORE = @"(?i)Eesti"
-    //
-    // [<Literal>]
-    // let AZ_EE = @"[a-züõöä]ee"
-    //
-    // [<Literal>]
-    // let HELI_AJA_AZ = @"Heli[a-zA-ZüõöäÜÕÖÄ]+|Aja[a-zA-ZüõöäÜÕÖÄ]+"
-    //
-    // [<Literal>]
-    // let AQ_X = @"[a-q][^u-z]{12}x"
-    //
-    // [<Literal>]
-    // let TOOMAS_MARGUS_REIN_JAAN = @"Toomas|Margus|Rein|Jaan"
-    //
-    // [<Literal>]
-    // let TOOMAS_MARGUS_REIN_JAAN_CASEIGNORE = @"(?i)Toomas|Margus|Rein|Jaan"
-    //
-    // [<Literal>]
-    // let D02_TOOMAS_MARGUS_REIN_JAAN = @".{0,2}Toomas|Margus|Rein|Jaan"
-    //
-    // [<Literal>]
-    // let D24_TOOMAS_MARGUS_REIN_JAAN = @".{2,4}Toomas|Margus|Rein|Jaan"
-    //
-    // [<Literal>]
-    // let EESTI_JOGI = @"Eesti.{10,25}jõgi|jõgi.{10,25}Eesti"
-    //
-    // [<Literal>]
-    // let AZ_TUD = @"[a-zA-ZüõöäÜÕÖÄ]+tud"
-    //
-    // [<Literal>]
-    // let AZ_TUD_SPACES = @"\s[a-zA-ZüõöäÜÕÖÄ]{0,12}tud\s"
-    //
-    // [<Literal>]
-    // let AZ_INA_EIN = @"([A-Za-z]ina|[A-Za-z]ein)\s"
-    //
-    // [<Literal>]
-    // let QUOTES = @"[""'][^""']{0,31}[?!\.][\""']"
-    //
-    // [<Literal>]
-    // let CURRENCY = @"\p{Sc}"
+    let LINCOLN = @"Lincoln"
     
+    [<Literal>]
+    let LINCOLN_CASEIGNORE = @"(?i)Lincoln"
     
+    [<Literal>]
+    let AZ_SHING = @"[a-z]shing"
     
+    [<Literal>]
+    let LINC_ROO = @"Linc[a-zA-Z]+|Roo[a-zA-Z]+"
+    
+    [<Literal>]
+    let WORD_END = @"\w+nn\W" // Alternative version of \b\w+nn\b
+    
+    [<Literal>]
+    let AQ_X = @"[a-q][^u-z]{13}x"
+    
+    [<Literal>]
+    let PRESIDENTS_ALTERNATION = @"Lincoln|Washington|Roosevelt|Jefferson"
+    
+    [<Literal>]
+    let PRESIDENTS_ALTERNATION_CASEIGNORE = @"(?i)Lincoln|Washington|Roosevelt|Jefferson"
+    
+    [<Literal>]
+    let D02_PRESIDENTS_ALTERNATION = @".{0,2}(Lincoln|Washington|Roosevelt|Jefferson)"
+    
+    [<Literal>]
+    let D24_PRESIDENTS_ALTERNATION = @".{2,4}(Lincoln|Washington|Roosevelt|Jefferson)"
+    
+    [<Literal>]
+    let ROOSEVELT_RIVER = @"Roosevelt.{10,25}river|river.{10,25}Roosevelt"
+    
+    [<Literal>]
+    let AZ_ING = @"[a-zA-Z]+ing"
+    
+    [<Literal>]
+    let AZ_ING_SPACES = @"\s[a-zA-Z]{0,12}ing\s"
+    
+    [<Literal>]
+    let AZ_INCOLN_OOSEVELT = @"([A-Za-z]incoln|[A-Za-z]oosevelt)\s"
+    
+    [<Literal>]
+    let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
+
 
 type BenchmarkConfig() as self =
     inherit ManualConfig() 
@@ -364,13 +364,51 @@ type MatchStartOptimizationEstWiki () =
     member this.Original() =
         this.regex.Count(estWiki)
         
+
+
+[<Config(typedefof<BenchmarkConfig>)>]
+[<MemoryDiagnoser(true)>]
+// [<ShortRunJob>]
+type MatchStartOptimizationEngWiki () =
+    
+
+    [<Params(
+        PatternsEngWiki.LINCOLN,
+        PatternsEngWiki.LINCOLN_CASEIGNORE,
+        PatternsEngWiki.AZ_SHING,
+        PatternsEngWiki.LINC_ROO,
+        PatternsEngWiki.WORD_END,
+        PatternsEngWiki.AQ_X,
+        PatternsEngWiki.PRESIDENTS_ALTERNATION,
+        PatternsEngWiki.PRESIDENTS_ALTERNATION_CASEIGNORE,
+        PatternsEngWiki.D02_PRESIDENTS_ALTERNATION,
+        PatternsEngWiki.D24_PRESIDENTS_ALTERNATION,
+        PatternsEngWiki.ROOSEVELT_RIVER,
+        PatternsEngWiki.AZ_ING,
+        PatternsEngWiki.AZ_ING_SPACES,
+        PatternsEngWiki.AZ_INCOLN_OOSEVELT,
+        PatternsEngWiki.QUOTES
+    )>]
+    member val rs: string = "" with get, set
+    
+    member val regex: Regex = Regex("") with get, set
+    
+    [<GlobalSetup(Target = "Original")>]
+    member this.OriginalSetup() =
+        this.regex <- Regex(this.rs)
+
+    [<Benchmark>]
+    member this.Original() =
+        this.regex.Count(engWiki)
+        
         
         
 
 type MatchCountingCorrectness () =
     
     member this.ManualTesting() =
-        this.MatchCountTestingEstWiki()
+        // this.MatchCountTestingEstWiki()
+        this.MatchCountTestingEngWiki()
     
     member this.MatchCountTestingTwain() =
         let pats = [|
@@ -468,6 +506,37 @@ type MatchCountingCorrectness () =
                 // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
             )
             let count = compiled.Count(estWiki)
+            ()
+    
+    member this.MatchCountTestingEngWiki() =
+        let pats = [|
+            PatternsEngWiki.LINCOLN             // 7400
+            PatternsEngWiki.LINCOLN_CASEIGNORE  // 8125
+            PatternsEngWiki.AZ_SHING            // 75741
+            PatternsEngWiki.LINC_ROO            // 19409
+            PatternsEngWiki.WORD_END            // 73464
+            PatternsEngWiki.AQ_X                // 463385
+            PatternsEngWiki.PRESIDENTS_ALTERNATION              // 42464
+            PatternsEngWiki.PRESIDENTS_ALTERNATION_CASEIGNORE   // 51644
+            PatternsEngWiki.D02_PRESIDENTS_ALTERNATION          // 42464
+            PatternsEngWiki.D24_PRESIDENTS_ALTERNATION          // 41855
+            PatternsEngWiki.ROOSEVELT_RIVER     // 3
+            PatternsEngWiki.AZ_ING              // 3095748
+            PatternsEngWiki.AZ_ING_SPACES       // 1935049
+            PatternsEngWiki.AZ_INCOLN_OOSEVELT  // 6234
+            PatternsEngWiki.QUOTES              // 15686
+        |]
+        for pat in pats do
+            let regex = Regex(pat)
+            let count = regex.Count(engWiki)
+            ()
+        for pat in pats do
+            let compiled = System.Text.RegularExpressions.Regex(
+                pat,
+                options = System.Text.RegularExpressions.RegexOptions.Compiled
+                // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+            )
+            let count = compiled.Count(engWiki)
             ()
         
         
