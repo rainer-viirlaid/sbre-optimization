@@ -330,7 +330,7 @@ type MatchStartOptimizationTammsaare () =
 
 [<Config(typedefof<BenchmarkConfig>)>]
 [<MemoryDiagnoser(true)>]
-[<ShortRunJob>]
+// [<ShortRunJob>]
 type MatchStartOptimizationEstWiki () =
     
 
