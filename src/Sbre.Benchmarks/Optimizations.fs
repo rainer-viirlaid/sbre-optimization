@@ -141,6 +141,48 @@ module PatternsEstWiki =
     [<Literal>]
     let ROOTSI = @"Rootsi"
     
+    [<Literal>]
+    let EESTI_CASEIGNORE = @"(?i)Eesti"
+    
+    [<Literal>]
+    let AZ_EE = @"[a-züõöä]ee"
+    
+    [<Literal>]
+    let HELI_AJA_AZ = @"Heli[a-zA-ZüõöäÜÕÖÄ]+|Aja[a-zA-ZüõöäÜÕÖÄ]+"
+    
+    [<Literal>]
+    let AQ_X = @"[a-q][^u-z]{12}x"
+    
+    [<Literal>]
+    let TOOMAS_MARGUS_REIN_JAAN = @"Toomas|Margus|Rein|Jaan"
+    
+    [<Literal>]
+    let TOOMAS_MARGUS_REIN_JAAN_CASEIGNORE = @"(?i)Toomas|Margus|Rein|Jaan"
+    
+    [<Literal>]
+    let D02_TOOMAS_MARGUS_REIN_JAAN = @".{0,2}Toomas|Margus|Rein|Jaan"
+    
+    [<Literal>]
+    let D24_TOOMAS_MARGUS_REIN_JAAN = @".{2,4}Toomas|Margus|Rein|Jaan"
+    
+    [<Literal>]
+    let EESTI_JOGI = @"Eesti.{10,25}jõgi|jõgi.{10,25}Eesti"
+    
+    [<Literal>]
+    let AZ_TUD = @"[a-zA-ZüõöäÜÕÖÄ]+tud"
+    
+    [<Literal>]
+    let AZ_TUD_SPACES = @"\s[a-zA-ZüõöäÜÕÖÄ]{0,12}tud\s"
+    
+    [<Literal>]
+    let AZ_INA_EIN = @"([A-Za-z]ina|[A-Za-z]ein)\s"
+    
+    [<Literal>]
+    let QUOTES = @"[""'][^""']{0,31}[?!\.][\""']"
+    
+    [<Literal>]
+    let CURRENCY = @"\p{Sc}"
+    
     
     
 
@@ -200,7 +242,7 @@ type MatchStartOptimizationTwain () =
 
 [<Config(typedefof<BenchmarkConfig>)>]
 [<MemoryDiagnoser(true)>]
-[<ShortRunJob>]
+// [<ShortRunJob>]
 type MatchStartOptimizationTammsaare () =
     
 
@@ -233,13 +275,51 @@ type MatchStartOptimizationTammsaare () =
     member this.Original() =
         this.regex.Count(tammsaare)
         
+
+
+[<Config(typedefof<BenchmarkConfig>)>]
+[<MemoryDiagnoser(true)>]
+[<ShortRunJob>]
+type MatchStartOptimizationEstWiki () =
+    
+
+    [<Params(
+        PatternsEstWiki.EESTI,
+        PatternsEstWiki.ROOTSI,
+        PatternsEstWiki.EESTI_CASEIGNORE,
+        PatternsEstWiki.AZ_EE,
+        // PatternsEstWiki.HELI_AJA_AZ,
+        PatternsEstWiki.AQ_X,
+        PatternsEstWiki.TOOMAS_MARGUS_REIN_JAAN,
+        PatternsEstWiki.TOOMAS_MARGUS_REIN_JAAN_CASEIGNORE,
+        PatternsEstWiki.D02_TOOMAS_MARGUS_REIN_JAAN,
+        PatternsEstWiki.D24_TOOMAS_MARGUS_REIN_JAAN,
+        PatternsEstWiki.EESTI_JOGI,
+        PatternsEstWiki.AZ_TUD,
+        PatternsEstWiki.AZ_TUD_SPACES,
+        PatternsEstWiki.AZ_INA_EIN,
+        PatternsEstWiki.QUOTES,
+        PatternsEstWiki.CURRENCY
+    )>]
+    member val rs: string = "" with get, set
+    
+    member val regex: Regex = Regex("") with get, set
+    
+    [<GlobalSetup(Target = "Original")>]
+    member this.OriginalSetup() =
+        this.regex <- Regex(this.rs)
+
+    [<Benchmark>]
+    member this.Original() =
+        this.regex.Count(estWiki)
+        
         
         
 
 type MatchCountingCorrectness () =
     
     member this.ManualTesting() =
-        this.MatchCountTestingTwain()
+        this.MatchCountTestingEstWiki()
     
     member this.MatchCountTestingTwain() =
         let pats = [|
@@ -305,6 +385,38 @@ type MatchCountingCorrectness () =
                 matchTimeout = TimeSpan.FromMilliseconds(10_000.)
             )
             let count = compiled.Count(tammsaare)
+            ()
+    
+    member this.MatchCountTestingEstWiki() =
+        let pats = [|
+            PatternsEstWiki.EESTI            // 589249
+            PatternsEstWiki.ROOTSI           // 56211
+            PatternsEstWiki.EESTI_CASEIGNORE // 733450
+            PatternsEstWiki.AZ_EE            // 2545307
+            PatternsEstWiki.HELI_AJA_AZ      // 54998, sbre timeout
+            PatternsEstWiki.AQ_X             // 777653
+            PatternsEstWiki.TOOMAS_MARGUS_REIN_JAAN             // 83711
+            PatternsEstWiki.TOOMAS_MARGUS_REIN_JAAN_CASEIGNORE  // 246103
+            PatternsEstWiki.D02_TOOMAS_MARGUS_REIN_JAAN         // 83711
+            PatternsEstWiki.D24_TOOMAS_MARGUS_REIN_JAAN         // 83408
+            PatternsEstWiki.EESTI_JOGI       // 206
+            PatternsEstWiki.AZ_TUD           // 842963
+            PatternsEstWiki.AZ_TUD_SPACES    // 540338, sbre slow
+            PatternsEstWiki.AZ_INA_EIN       // 175971
+            PatternsEstWiki.QUOTES           // 30371
+            PatternsEstWiki.CURRENCY         // 8674
+        |]
+        for pat in pats do
+            let regex = Regex(pat)
+            let count = regex.Count(estWiki)
+            ()
+        for pat in pats do
+            let compiled = System.Text.RegularExpressions.Regex(
+                pat,
+                options = System.Text.RegularExpressions.RegexOptions.Compiled
+                // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+            )
+            let count = compiled.Count(estWiki)
             ()
         
         
