@@ -79,6 +79,7 @@ let main argv =
     | "prefixTamm" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationTammsaare>) |> ignore
     | "prefixEstWiki" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationEstWiki>) |> ignore
     | "prefixEngWiki" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationEngWiki>) |> ignore
+    | "compileTwain" -> BenchmarkRunner.Run(typeof<Compile.CompileTimeTwain>) |> ignore
     // ---
     | "learning1" -> BenchmarkRunner.Run(typeof<Learning.Learning1>,config) |> ignore
     | "learning2" -> BenchmarkRunner.Run(typeof<Learning.Learning2>,config) |> ignore
