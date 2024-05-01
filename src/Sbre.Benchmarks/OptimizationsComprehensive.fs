@@ -286,7 +286,7 @@ type MatchStartOptimizationTwain () =
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(twain)
     
@@ -298,7 +298,7 @@ type MatchStartOptimizationTwain () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.DotnetCompiled() =
         this.regex.Count(twain)
         
@@ -336,7 +336,7 @@ type MatchStartOptimizationTammsaare () =
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(tammsaare)
     
@@ -348,7 +348,7 @@ type MatchStartOptimizationTammsaare () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.DotnetCompiled() =
         this.regex.Count(tammsaare)
         
@@ -387,7 +387,7 @@ type MatchStartOptimizationEstWiki () =
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(estWiki)
     
@@ -399,7 +399,7 @@ type MatchStartOptimizationEstWiki () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.DotnetCompiled() =
         this.regex.Count(estWiki)
         
@@ -437,7 +437,7 @@ type MatchStartOptimizationEngWiki () =
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(engWiki)
     
@@ -449,7 +449,7 @@ type MatchStartOptimizationEngWiki () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.DotnetCompiled() =
         this.regex.Count(engWiki)
         
