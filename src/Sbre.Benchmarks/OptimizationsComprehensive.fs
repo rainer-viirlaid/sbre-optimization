@@ -244,6 +244,7 @@ type BenchmarkConfig() as self =
                             .WithMaxParameterColumnWidth(60)
         self.SummaryStyle <- summaryStyle
         self
+            .AddColumn([| StatisticColumn.Error; StatisticColumn.Median |])
             .AddExporter(CsvExporter(CsvSeparator.Comma, summaryStyle))
             // .With(CsvExporter(CsvSeparator.Comma, summaryStyle))
             |> ignore
@@ -280,19 +281,20 @@ type MatchStartOptimizationTwain () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
-    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetCompiled: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetNBT: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
     [<GlobalSetup(Target = "OptimizedRESharp")>]
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(twain)
     
     [<GlobalSetup(Target = "DotnetCompiled")>]
     member this.DotnetCompiledSetup() =
-        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
             this.rs,
             options = System.Text.RegularExpressions.RegexOptions.Compiled
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
@@ -300,7 +302,19 @@ type MatchStartOptimizationTwain () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regexDotNet.Count(twain)
+        this.regexDotNetCompiled.Count(twain)
+    
+    [<GlobalSetup(Target = "DotnetNonBacktracking")>]
+    member this.DotnetNonBacktrackingSetup() =
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.NonBacktracking
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    [<Benchmark>]
+    member this.DotnetNonBacktracking() =
+        this.regexDotNetCompiled.Count(twain)
         
 
 
@@ -330,19 +344,20 @@ type MatchStartOptimizationTammsaare () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
-    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetCompiled: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetNBT: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
     [<GlobalSetup(Target = "OptimizedRESharp")>]
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(tammsaare)
     
     [<GlobalSetup(Target = "DotnetCompiled")>]
     member this.DotnetCompiledSetup() =
-        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
             this.rs,
             options = System.Text.RegularExpressions.RegexOptions.Compiled
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
@@ -350,7 +365,19 @@ type MatchStartOptimizationTammsaare () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regexDotNet.Count(tammsaare)
+        this.regexDotNetCompiled.Count(tammsaare)
+    
+    [<GlobalSetup(Target = "DotnetNonBacktracking")>]
+    member this.DotnetNonBacktrackingSetup() =
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.NonBacktracking
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    [<Benchmark>]
+    member this.DotnetNonBacktracking() =
+        this.regexDotNetCompiled.Count(tammsaare)
         
 
 
@@ -381,19 +408,20 @@ type MatchStartOptimizationEstWiki () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
-    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetCompiled: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetNBT: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
     [<GlobalSetup(Target = "OptimizedRESharp")>]
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(estWiki)
     
     [<GlobalSetup(Target = "DotnetCompiled")>]
     member this.DotnetCompiledSetup() =
-        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
             this.rs,
             options = System.Text.RegularExpressions.RegexOptions.Compiled
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
@@ -401,7 +429,19 @@ type MatchStartOptimizationEstWiki () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regexDotNet.Count(estWiki)
+        this.regexDotNetCompiled.Count(estWiki)
+    
+    [<GlobalSetup(Target = "DotnetNonBacktracking")>]
+    member this.DotnetNonBacktrackingSetup() =
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.NonBacktracking
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    [<Benchmark>]
+    member this.DotnetNonBacktracking() =
+        this.regexDotNetCompiled.Count(estWiki)
         
 
 
@@ -431,19 +471,20 @@ type MatchStartOptimizationEngWiki () =
     member val rs: string = "" with get, set
     
     member val regex: Regex = Regex("") with get, set
-    member val regexDotNet: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetCompiled: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetNBT: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
     
     [<GlobalSetup(Target = "OptimizedRESharp")>]
     member this.OptimizedRESharpSetup() =
         this.regex <- Regex(this.rs)
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.OptimizedRESharp() =
         this.regex.Count(engWiki)
     
     [<GlobalSetup(Target = "DotnetCompiled")>]
     member this.DotnetCompiledSetup() =
-        this.regexDotNet <- System.Text.RegularExpressions.Regex(
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
             this.rs,
             options = System.Text.RegularExpressions.RegexOptions.Compiled
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
@@ -451,7 +492,19 @@ type MatchStartOptimizationEngWiki () =
 
     [<Benchmark>]
     member this.DotnetCompiled() =
-        this.regexDotNet.Count(engWiki)
+        this.regexDotNetCompiled.Count(engWiki)
+    
+    [<GlobalSetup(Target = "DotnetNonBacktracking")>]
+    member this.DotnetNonBacktrackingSetup() =
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.NonBacktracking
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    [<Benchmark>]
+    member this.DotnetNonBacktracking() =
+        this.regexDotNetCompiled.Count(engWiki)
         
         
         
