@@ -150,10 +150,10 @@ module PatternsEstWiki =
     let EESTI_CASEIGNORE = @"(?i)Eesti"
     
     [<Literal>]
-    let AZ_EE = @"[a-züõöä]ee"
+    let AZ_EE = @"[a-zšžüõöä]ee"
     
     [<Literal>]
-    let HELI_AJA_AZ = @"Heli[a-zA-ZüõöäÜÕÖÄ]+|Aja[a-zA-ZüõöäÜÕÖÄ]+"
+    let HELI_AJA_AZ = @"Heli[a-zA-ZšžüõöäŠŽÜÕÖÄ]+|Aja[a-zA-ZšžüõöäŠŽÜÕÖÄ]+"
     
     [<Literal>]
     let AQ_X = @"[a-q][^u-z]{12}x"
@@ -174,13 +174,13 @@ module PatternsEstWiki =
     let EESTI_JOGI = @"Eesti.{10,25}jõgi|jõgi.{10,25}Eesti"
     
     [<Literal>]
-    let AZ_TUD = @"[a-zA-ZüõöäÜÕÖÄ]+tud"
+    let AZ_TUD = @"[a-zA-ZšžüõöäŠŽÜÕÖÄ]+tud"
     
     [<Literal>]
-    let AZ_TUD_SPACES = @"\s[a-zA-ZüõöäÜÕÖÄ]{0,12}tud\s"
+    let AZ_TUD_SPACES = @"\s[a-zA-ZšžüõöäŠŽÜÕÖÄ]{0,12}tud\s"
     
     [<Literal>]
-    let AZ_INA_EIN = @"([A-Za-z]ina|[A-Za-z]ein)\s"
+    let AZ_INA_EIN = @"([A-Za-zšžüõöäŠŽÜÕÖÄ]ina|[A-Za-zšžüõöäŠŽÜÕÖÄ]ein)\s"
     
     [<Literal>]
     let QUOTES = @"[""'][^""']{0,31}[?!\.][\""']"

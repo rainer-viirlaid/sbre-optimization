@@ -232,10 +232,10 @@ type PrefixCharsetSearch () =
         
         // let a = this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
-        this.regex <- Regex(Patterns.TWAIN)
+        this.regex <- Regex("[a-zõäöüšž]")
         // this.regex.TSetMatcher.SetCharacterWeights(twainWeights100)
         // this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
-        let c = this.regex.Count(testInput)
+        let c = this.regex.Count("aõäöüszxyšž")
         ()
     
     member this.MatchCountTesting() =
