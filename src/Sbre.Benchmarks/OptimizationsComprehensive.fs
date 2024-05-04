@@ -183,7 +183,7 @@ module PatternsEstWiki =
     let AZ_INA_EIN = @"([A-Za-zšžüõöäŠŽÜÕÖÄ]ina|[A-Za-zšžüõöäŠŽÜÕÖÄ]ein)\s"
     
     [<Literal>]
-    let QUOTES = @"[""'][^""']{0,31}[?!\.][\""']"
+    let QUOTES = @"[""'][^""']{0,31}[?!\.][""']"
     
     [<Literal>]
     let CURRENCY = @"\p{Sc}"
