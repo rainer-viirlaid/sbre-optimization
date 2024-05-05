@@ -140,4 +140,20 @@ type CompileTimeTwain () =
     member this.RESharp() =
         let regex = Regex(this.rs)
         regex.IsMatch(this.matchingText) |> ignore
+
+    [<Benchmark>]
+    member this.DotNetCompiled() =
+        let regex = System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.Compiled
+        )
+        ()
+
+    [<Benchmark>]
+    member this.DotNetNonBacktracking() =
+        let regex = System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.NonBacktracking
+        )
+        ()
         
