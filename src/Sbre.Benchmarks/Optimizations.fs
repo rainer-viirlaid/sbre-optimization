@@ -244,6 +244,7 @@ type BenchmarkConfig() as self =
                             .WithMaxParameterColumnWidth(60)
         self.SummaryStyle <- summaryStyle
         self
+            .AddColumn([| StatisticColumn.Error; StatisticColumn.Median |])
             .AddExporter(CsvExporter(CsvSeparator.Comma, summaryStyle))
             // .With(CsvExporter(CsvSeparator.Comma, summaryStyle))
             |> ignore
