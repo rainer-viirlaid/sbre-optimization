@@ -23,8 +23,16 @@
     <WarnOn>1182</WarnOn>
     <!--    implicit conversion -->
     <WarnOn>3387</WarnOn>
+    <!--    <DefineConstants>$(DefineConstants);NO_REWRITE_NEGATIVE</DefineConstants>-->
+    <!--    <DefineConstants>$(DefineConstants);NO_SKIP_LOOKAROUNDS</DefineConstants>-->
+    <!--    <DefineConstants>$(DefineConstants);NO_CACHE_BUILDER</DefineConstants>-->
+    <!--    <DefineConstants>$(DefineConstants);NO_REWRITE</DefineConstants>-->
+    <!--    <DefineConstants>$(DefineConstants);CANONICAL</DefineConstants>-->
+    <DefineConstants>$(DefineConstants);OPTIMIZE</DefineConstants>
+    <DefineConstants>$(DefineConstants);REWRITE_INNER</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUBSUME</DefineConstants>
     <DefineConstants>$(DefineConstants);SKIP</DefineConstants>
-    <DefineConstants>$(DefineConstants);DFA</DefineConstants>
+    <DefineConstants>$(DefineConstants);SKIP_ACTIVE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Sbre.Test" />
@@ -43,21 +51,19 @@
     <Compile Include="CountingSet.fs" />
     <Compile Include="Algorithm.fs" />
     <Compile Include="Optimizations.fs" />
+    <Compile Include="Msagl.fs" />
     <Compile Include="Regex.fs" />
   </ItemGroup>
   <PropertyGroup>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <Authors>ieviev</Authors>
     <Title>$(ProjectName)</Title>
-    <Version>0.0.23</Version>
+    <Version>0.1.30</Version>
   </PropertyGroup>
   <ItemGroup>
-    <!-- <Reference Include="RuntimeRegexCopy" Condition="'$(Configuration)'=='Release'">
-      <HintPath>../RuntimeRegexCopy/bin/Release/net8.0/RuntimeRegexCopy.dll</HintPath>
-    </Reference> -->
     <!-- nuget pack -->
 <!--    <ProjectReference Include="..\RuntimeRegexCopy\RuntimeRegexCopy.csproj" PrivateAssets="all" />-->
-      <ProjectReference Include="..\RuntimeRegexCopy\RuntimeRegexCopy.csproj"  />
+          <ProjectReference Include="..\RuntimeRegexCopy\RuntimeRegexCopy.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)../RuntimeRegexCopy/bin/Release/net8.0/RuntimeRegexCopy.dll">
@@ -65,8 +71,5 @@
       <PackageCopyToOutput>true</PackageCopyToOutput>
       <PackagePath>lib/$(TargetFramework)/</PackagePath>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="8.0.*" />
   </ItemGroup>
 </Project>

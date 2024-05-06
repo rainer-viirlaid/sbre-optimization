@@ -21,34 +21,54 @@ module Extensions =
             not (this.IsEmpty(this.And(locationMinterm, predicate)))
 
         [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-        member this.notElemOfSet(predicate: 't, locationMinterm: 't) =
+        member this.elemOfSet(predicate: 't) (locationMinterm: 't) =
+            not (this.IsEmpty(this.And(locationMinterm, predicate)))
+
+        [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+        member this.notElemOfSet(predicate: 't) (locationMinterm: 't) =
             this.IsEmpty(this.And(locationMinterm, predicate))
 
+        [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+        member this.contains(larger: 't) (smaller: 't) =
+            let overlapped = this.And(smaller,larger)
+            // smaller = overlapped
+            match box overlapped, box smaller with
+            | (:? uint64 as ov), (:? uint64 as sm) -> ov = sm
+            | (:? BDD as ov), (:? BDD as sm) -> ov = sm
+            | (:? BitVector as ov), (:? BitVector as sm) -> ov = sm
+            | _ -> failwith "invalid set"
 
 
 #nowarn "42"
 
 module Solver =
-    // todo
-    let inline elemOfSet predicate locationMinterm =
-        predicate &&& locationMinterm <> LanguagePrimitives.GenericZero
+    // let inline elemOfSet predicate locationMinterm =
+    //     predicate &&& locationMinterm <> LanguagePrimitives.GenericZero
+    // let inline il_and (x:'t) (y:'t) =
+    //     (# "and" x y : 't #)
+    // let inline notElemOfSet predicate locationMinterm =
+    //     (predicate &&& locationMinterm) = LanguagePrimitives.GenericZero
+    // let inline contains
+    //     (larger: ^d when ^d : struct)
+    //     (smaller: ^d): bool =
+    //         (larger &&& smaller) = smaller
 
-    let inline il_and (x:'t) (y:'t) =
-        (# "and" x y : 't #)
-    let inline notElemOfSet predicate locationMinterm =
-        (predicate &&& locationMinterm) = LanguagePrimitives.GenericZero
-    let inline contains
-        (larger: ^d when ^d : struct)
-        (smaller: ^d): bool =
-            (larger &&& smaller) = smaller
-    // let inline notElemOfSetU64 predicate locationMinterm = predicate &&& locationMinterm = 0uL
-    let inline not' predicate = ~~~predicate
-    let inline isEmpty predicate = predicate = 0UL
-    let inline mapOr (s:ISolver<^t>) ([<InlineIfLambda>]f: 'a -> ^t) xs: ^t =
-        let mutable startset = s.Empty
-        for x in xs do
-            startset <- s.Or(startset,f x)
-        startset
+    let containsS
+        (solver:ISolver<'d>)
+        (larger: 'd)
+        (smaller: 'd): bool =
+            let overlapped = solver.And(smaller,larger)
+            obj.ReferenceEquals((box smaller),(box overlapped)) || smaller = overlapped
+
+
+
+    // let inline not' predicate = ~~~predicate
+    // // let inline isEmpty (predicate:TSet) = predicate = LanguagePrimitives.GenericZero
+    // let inline mapOr (s:ISolver<^t>) ([<InlineIfLambda>]f: 'a -> ^t) xs: ^t =
+    //     let mutable startset = s.Empty
+    //     for x in xs do
+    //         startset <- s.Or(startset,f x)
+    //     startset
 
     let inline mergeOrWithEnumerator
         (s:ISolver<^t>)
@@ -107,7 +127,7 @@ let rec loopSubsumesBranch (solver:ISolver<'t>) (largePred: 't) (node:RegexNode<
         if largePred = pred2 then true
         elif containsv then true
         else false
-    | Concat (head,tail,info) ->
+    | Concat (head,tail,k_) ->
         if loopSubsumesBranch solver largePred head then
             loopSubsumesBranch solver largePred tail
         else false
@@ -131,6 +151,64 @@ let (|SingletonStarLoop|_|) (node: RegexNode<_>) =
     | Loop(node=Singleton pred;low=0;up=Int32.MaxValue) -> ValueSome(pred)
     | _ -> ValueNone
 
+
+[<return: Struct>]
+let (|LookbackPrefix|_|) (node: RegexNode<_>) =
+    match node with
+    | LookAround(lookBack=true) -> ValueSome(node)
+    | Concat(head=LookAround(lookBack=true)) -> ValueSome(node)
+    | _ -> ValueNone
+
+[<return: Struct>]
+let (|HasInfo|_|) (node: RegexNode<_>) =
+    match node with
+    | Concat(info=info) | Or(info=info) | Not(info=info) | And(info=info) | LookAround(info=info) -> ValueSome info
+    | _ -> ValueNone
+
+[<return: Struct>]
+let (|HasPrefixLookback|_|) (node: RegexNode<_>) =
+    match node with
+    | LookAround(lookBack=true) -> ValueSome()
+    | HasInfo info ->
+        if info.NodeFlags.HasPrefixLookbehind then ValueSome()
+        else ValueNone
+    | _ -> ValueNone
+
+[<return: Struct>]
+let (|HasSuffixLookahead|_|) (node: RegexNode<_>) =
+    match node with
+    | LookAround(lookBack=false) -> ValueSome()
+    | HasInfo info ->
+        if info.NodeFlags.HasSuffixLookahead then ValueSome()
+        else ValueNone
+    | _ -> ValueNone
+
+
+[<return: Struct>]
+let (|HasPrefixOrSuffix|_|) (node: RegexNode<_>) =
+    match node with
+    | LookAround(lookBack=true) -> ValueSome()
+    | Concat(head=LookAround(lookBack=true)) -> ValueSome()
+    | Concat(tail=LookAround(lookBack=true)) -> ValueSome()
+    | Concat(tail=HasPrefixOrSuffix()) -> ValueSome()
+    | _ -> ValueNone
+
+[<return: Struct>]
+let (|StarLoop|_|) (node: RegexNode<_>) =
+    match node with
+    | Loop(node=starNode;low=0;up=Int32.MaxValue) -> ValueSome(starNode)
+    | _ -> ValueNone
+
+let (|SplitTail|) (node: RegexNode<_>) =
+    let tmp = ResizeArray()
+    let rec loop node =
+        match node with
+        | Concat(head=h;tail=tail) ->
+            tmp.Add(h)
+            loop(tail)
+        | _ -> tmp, node
+    loop node
+
 [<return: Struct>]
 let (|TrueStar|_|) (solver: ISolver<_>) (node: RegexNode<_>) =
     match node with
@@ -143,34 +221,11 @@ let (|BoundedLoop|_|) (node: RegexNode<_>) =
     | Concat(head=Loop(node=Singleton pred;low=low;up=up); tail=tail) when up <> Int32.MaxValue -> ValueSome()
     | _ -> ValueNone
 
-
-[<return: Struct>]
-let (|TrueStarredConcat|_|) (solver: ISolver<_>) (node: RegexNode<_>) =
-    match node with
-    | Concat(head=TrueStar solver; tail=tail; info=info) when not info.NodeFlags.HasCounter -> ValueSome(tail)
-    | _ -> ValueNone
-
-
 [<return: Struct>]
 let (|CounterNode|_|) (node: RegexNode<_>) =
     match node with
     | (BoundedLoop as loop) | Concat(head=(BoundedLoop) as loop; tail=_)  -> ValueSome(loop)
     | _ -> ValueNone
-
-
-// [<return: Struct>]
-// let (|MonadicNode|_|) (node: RegexNode<_>) =
-//     match node with
-//     | (BoundedLoop as loop) | Concat(head=(BoundedLoop) as loop; tail=_)  -> ValueSome(loop)
-//     | _ -> ValueNone
-
-
-// private bool IsMonadic(string regex)
-// 	{
-// 		Predicate<SymbolicRegexNode<ulong>> pred = (SymbolicRegexNode<ulong> node) => node.Kind == SymbolicRegexKind.Loop && node.Left.Kind != SymbolicRegexKind.Singleton && !node.IsStar && !node.IsMaybe && !node.IsPlus;
-// 		return !(new Regex(regex, RegexOptions.Singleline).Compile(true, false, false) as SymbolicRegexUInt64).Pattern.ExistsNode(pred);
-// 	}
-
 
 
 [<return: Struct>]
@@ -188,7 +243,7 @@ let (|AllSameHead|_|) (nodes: seq<RegexNode<_>>) =
     |> Seq.pairwise
     |> Seq.iter (fun (prev, v) ->
         match prev, v with
-        | Concat(head = head1; tail = tail1), Concat(head = head2; tail = tail2) ->
+        | Concat(head = head1; tail = _), Concat(head = head2; tail = _) ->
             if not (obj.ReferenceEquals(head1, head2)) then
                 allsame <- false
             else
@@ -200,115 +255,9 @@ let (|AllSameHead|_|) (nodes: seq<RegexNode<_>>) =
     else ValueNone
 
 
-
-let rec isSubSequence (bigger: RegexNode<TSet>) (smaller: RegexNode<TSet>): RegexNode<TSet> voption  =
-    match bigger, smaller with
-    | Concat(head = SingletonStarLoop(head1); tail = tail1), Or(nodes = xs) ->
-        xs
-        |> Seq.tryPick (fun v ->
-            match isSubSequence tail1 v with
-            | ValueSome v -> Some v
-            | _ -> None
-        )
-        |> function
-        | Some v -> ValueSome v
-        | _ -> ValueNone
-    | Concat(head = head1; tail = tail1), Concat(head = head2; tail = tail2) ->
-        if obj.ReferenceEquals(head1, head2) then isSubSequence tail1 smaller else
-        match head1, head2 with
-        | _, Singleton head2 -> ValueNone
-        | SingletonStarLoop(head1), SingletonStarLoop(head2) ->
-            if obj.ReferenceEquals(tail1, tail2) then
-                ValueSome smaller
-            else
-                isSubSequence tail1 smaller
-        | Singleton spred, SingletonStarLoop(lpred) ->
-            if Solver.elemOfSet lpred spred then
-                if obj.ReferenceEquals(tail1, smaller) then
-                    ValueSome smaller
-                else
-                    isSubSequence tail1 smaller
-            else
-                ValueNone
-        | Or(nodes= headNodes), SingletonStarLoop(lpred) ->
-            if setIsSubsumedSingle headNodes smaller then
-                ValueSome smaller
-            else
-                ValueNone
-        | _ ->
-            ValueNone
-    | Or(nodes = nodes), Concat(head = head2; tail = tail2) ->
-        if setIsSubsumedSingle nodes smaller then
-            ValueSome smaller
-        else
-            ValueNone
-
-    | _, n when n.IsAlwaysNullable -> ValueSome smaller
-    // | _, Epsilon -> ValueSome (smaller)
-    | Loop _, _
-    | Or _, Concat _
-    | Or _, Or _
-    | Not _, _
-    | _, Not  _
-    | Singleton _, _
-     -> ValueNone
-    | _ ->
-        // let dbg = 1
-        // failwith $"todo!:\n{bigger.ToStringHelper()}\n{smaller.ToStringHelper()}"
-        ValueNone
-
-
-let rec setIsSubsumed  (bigger: RegexNode<TSet> seq) (smaller: RegexNode<TSet> seq) : bool  =
-    use mutable eSmaller = smaller.GetEnumerator()
-    use mutable eBigger = bigger.GetEnumerator()
-    let mutable found = false
-    while eSmaller.MoveNext() do
-        while not found && eBigger.MoveNext() do
-            match isSubSequence eBigger.Current eSmaller.Current   with
-            | ValueSome v ->
-                found <- true
-            | _ -> ()
-    found
-
-
-let rec setIsSubsumedSingle (bigger: RegexNode<TSet> seq) (smaller: RegexNode<TSet>) : bool  =
-    use mutable eBigger = bigger.GetEnumerator()
-    let mutable found = false
-    while not found && eBigger.MoveNext() do
-        match isSubSequence eBigger.Current smaller with
-        | ValueSome v ->
-            found <- true
-        | _ -> ()
-    found
-
-
-[<return: Struct>]
-let (|TrySubsumeSameTail|_|) (nodes: HashSet<RegexNode<TSet>>) =
-    let arr =
-        nodes
-        |> Seq.toArray
-    match arr with
-    | [| e1; e2 |] ->
-        match isSubSequence e1 e2 with
-        | ValueSome s -> ValueSome(s)
-        | _ ->
-            match isSubSequence e2 e1 with
-            | ValueSome s -> ValueSome s
-            | _ -> ValueNone
-    | _ ->
-        // TODO:
-        // failwith "todo optimize"
-        ValueNone
-
-
-
-
-
-
-
-
 module Location =
     let getDefault() : Location = { Input = ReadOnlySpan.Empty; Reversed = false; Position = 0 }
+    let getNonInitial() : Location = { Input = "abc".AsSpan() ; Reversed = false; Position = 1 }
     let inline create (str: string) (p: int32) : Location = { Input = str.AsSpan(); Position = p; Reversed = false }
     let inline createSpan (str: ReadOnlySpan<char>) (p: int32) : Location = { Input = str; Position = p; Reversed = false }
     let inline clone (loc:inref<Location>) : Location =
@@ -337,6 +286,9 @@ module Location =
 /// same as obj.ReferenceEquals(x, y)
 let inline refEq x y =
     // obj.ReferenceEquals(x, y)
-    // System.Runtime.CompilerServices.RuntimeHelpers.Equals(x,y)
     // obj.ReferenceEquals(x, y)
     LanguagePrimitives.PhysicalEquality x y
+
+/// same pointer location
+let inline same(x:inref<_>, y:inref<_>) =
+    Runtime.CompilerServices.Unsafe.AreSame(&x,&y)

@@ -68,10 +68,7 @@ namespace System.Text.RuntimeRegexCopy.Symbolic
 
         /// <summary>Identity function for <paramref name="set"/>, since <paramref name="set"/> is already a <see cref="BDD"/>.</summary>
         public BDD ConvertToBDD(BDD set, CharSetSolver _) => set;
-#if DEBUG
-        
 
-        /// <summary>Creates a BDD that contains all of the characters in each range.</summary>
         internal BDD CreateBDDFromRanges(List<(char Lower, char Upper)> ranges)
         {
             BDD bdd = Empty;
@@ -82,10 +79,14 @@ namespace System.Text.RuntimeRegexCopy.Symbolic
 
             return bdd;
         }
+        
 
+
+        /// <summary>Creates a BDD that contains all of the characters in each range.</summary>
+#if DEBUG
         /// <summary>Formats the contents of the specified set for human consumption.</summary>
         string ISolver<BDD>.PrettyPrint(BDD characterClass, CharSetSolver solver) => PrettyPrint(characterClass);
-
+#endif
         /// <summary>Formats the contents of the specified set for human consumption.</summary>
         public string PrettyPrint(BDD set)
         {
@@ -138,6 +139,8 @@ namespace System.Text.RuntimeRegexCopy.Symbolic
             }
             return RegexCharClass.DescribeSet(rcc.ToStringClass());
         }
+#if DEBUG
+
 #endif
         /// <summary>Unions two <see cref = "BDD"/>s to produce a new <see cref = "BDD"/>.</summary>
         public BDD Or(BDD set1, BDD set2) => ApplyBinaryOp(BooleanOperation.Or, set1, set2);
