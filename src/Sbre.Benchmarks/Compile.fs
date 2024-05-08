@@ -140,6 +140,10 @@ type CompileTimeTwain () =
     member this.RESharp() =
         let regex = Regex(this.rs)
         regex.IsMatch(this.matchingText) |> ignore
+    
+    [<GlobalSetup(Target = "DotNetCompiled")>]
+    member this.DotNetCompiledSetup() =
+        this.matchingText <- this.matchingTextMap[this.rs]
 
     [<Benchmark>]
     member this.DotNetCompiled() =
@@ -147,7 +151,12 @@ type CompileTimeTwain () =
             this.rs,
             options = System.Text.RegularExpressions.RegexOptions.Compiled
         )
+        regex.IsMatch(this.matchingText) |> ignore
         ()
+    
+    [<GlobalSetup(Target = "DotNetNonBacktracking")>]
+    member this.DotNetNonBacktrackingSetup() =
+        this.matchingText <- this.matchingTextMap[this.rs]
 
     [<Benchmark>]
     member this.DotNetNonBacktracking() =
@@ -155,5 +164,6 @@ type CompileTimeTwain () =
             this.rs,
             options = System.Text.RegularExpressions.RegexOptions.NonBacktracking
         )
+        regex.IsMatch(this.matchingText) |> ignore
         ()
         
