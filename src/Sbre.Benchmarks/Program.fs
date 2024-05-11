@@ -74,6 +74,7 @@ let main argv =
     match Environment.GetCommandLineArgs() |> Seq.last with
     | "prefix1" -> BenchmarkRunner.Run(typeof<Optimizations.Prefix1>,config) |> ignore
     | "prefixW" -> BenchmarkRunner.Run(typeof<Optimizations.PrefixCharsetSearch>) |> ignore
+    | "prefixWeightComp" -> BenchmarkRunner.Run(typeof<Optimizations.WeightsComparison>) |> ignore
     | "weightCalc" -> BenchmarkRunner.Run(typeof<Optimizations.WeightCalculation>) |> ignore
     | "prefixTwain" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationTwain>) |> ignore
     | "prefixTamm" -> BenchmarkRunner.Run(typeof<OptimizationsComprehensive.MatchStartOptimizationTammsaare>) |> ignore

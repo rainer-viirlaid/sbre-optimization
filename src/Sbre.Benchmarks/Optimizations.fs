@@ -14,6 +14,8 @@ open BenchmarkDotNet.Reports
 open Perfolizer.Horology
 open Sbre
 open Sbre.Benchmarks.Jobs
+open Sbre.Benchmarks.OptimizationsComprehensive
+open Sbre.Benchmarks.Paper
 open Sbre.Optimizations
 open System
 open Sbre.Pat
@@ -49,8 +51,8 @@ let loadJsonCharFrequencies (jsonText: string) =
         ) |> dict
 
 let twainWeightsFull = loadJsonCharFrequencies twainWeightsJson
-let twainWeights100 = loadJsonCharFrequencies twainWeights10kJson
-let twainWeights1k = loadJsonCharFrequencies twainWeights10kJson
+let twainWeights100 = loadJsonCharFrequencies twainWeights100Json
+let twainWeights1k = loadJsonCharFrequencies twainWeights1kJson
 let twainWeights10k = loadJsonCharFrequencies twainWeights10kJson
 let twainWeights100k = loadJsonCharFrequencies twainWeights100kJson
 
@@ -233,7 +235,7 @@ type PrefixCharsetSearch () =
         
         // let a = this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
-        this.regex <- Regex("[^.]\.\.[^.]")
+        this.regex <- Regex("\{[^{}]*\}")
         // this.regex.TSetMatcher.SetCharacterWeights(twainWeights100)
         // this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
@@ -310,30 +312,30 @@ type WeightsComparison () =
     [<Params(
         // Twain regexes
         
-        // Patterns.TWAIN,
-        // Patterns.TWAIN_CASEIGNORE,
-        // Patterns.AZ_SHING,
-        // Patterns.HUCK_SAW,
-        // Patterns.WORD_END,
-        // Patterns.AQ_X,
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN
-        // Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
-        // Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        // Patterns.TOM_RIVER,
-        // Patterns.AZ_ING,
-        // Patterns.AZ_ING_SPACES,
-        // Patterns.AZ_AWYER_INN,
-        // Patterns.QUOTES,
-        //
-        // Patterns.HAVE_THERE,
-        // Patterns.HUCK_AZ,
-        // Patterns.AZ_UCK_AZ,
-        // Patterns.H_AZ_CK_AZ
+        Patterns.TWAIN,
+        Patterns.TWAIN_CASEIGNORE,
+        Patterns.AZ_SHING,
+        Patterns.HUCK_SAW,
+        Patterns.WORD_END,
+        Patterns.AQ_X,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        Patterns.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
+        Patterns.TOM_RIVER,
+        Patterns.AZ_ING,
+        Patterns.AZ_ING_SPACES,
+        Patterns.AZ_AWYER_INN,
+        Patterns.QUOTES,
+        
+        Patterns.HAVE_THERE,
+        Patterns.HUCK_AZ,
+        Patterns.AZ_UCK_AZ,
+        Patterns.H_AZ_CK_AZ
         
         // Rebar regexes
         
-        Patterns.SHERLOCK
+        // Patterns.SHERLOCK
         // Patterns.SHERLOCK_CASEIGNORE
     )>]
     member val rs: string = "" with get, set
@@ -344,8 +346,8 @@ type WeightsComparison () =
     [<GlobalSetup(Target = "FullWeights")>]
     member this.FullWeightsSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
 
     [<Benchmark>]
     member this.FullWeights() =
@@ -355,8 +357,8 @@ type WeightsComparison () =
     [<GlobalSetup(Target = "_100Weights")>]
     member this._100WeightsSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         this.regex.TSetMatcher.SetCharacterWeights(twainWeights100)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
 
     [<Benchmark>]
     member this._100Weights() =
@@ -366,8 +368,8 @@ type WeightsComparison () =
     [<GlobalSetup(Target = "_1kWeights")>]
     member this._1kWeightsSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         this.regex.TSetMatcher.SetCharacterWeights(twainWeights1k)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
 
     [<Benchmark>]
     member this._1kWeights() =
@@ -377,23 +379,23 @@ type WeightsComparison () =
     [<GlobalSetup(Target = "_10kWeights")>]
     member this._10kWeightsSetup() =
         this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
         this.regex.TSetMatcher.SetCharacterWeights(twainWeights10k)
+        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
 
     [<Benchmark>]
     member this._10kWeights() =
         this.regex.Count(testInput)
     
 
-    [<GlobalSetup(Target = "_100kWeights")>]
-    member this._100kWeightsSetup() =
-        this.regex <- Regex(this.rs)
-        this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
-        this.regex.TSetMatcher.SetCharacterWeights(twainWeights100k)
-
-    [<Benchmark>]
-    member this._100kWeights() =
-        this.regex.Count(testInput)
+    // [<GlobalSetup(Target = "_100kWeights")>]
+    // member this._100kWeightsSetup() =
+    //     this.regex <- Regex(this.rs)
+    //     this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.AlternationSpecialSet)
+    //     this.regex.TSetMatcher.SetCharacterWeights(twainWeights100k)
+    //
+    // [<Benchmark>]
+    // member this._100kWeights() =
+    //     this.regex.Count(testInput)
 
 
 
