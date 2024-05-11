@@ -29,6 +29,11 @@ let engWiki = if engWikiLocation <> "" then engWikiLocation
                                             |> System.IO.File.ReadAllBytes
                                             |> System.Text.Encoding.UTF8.GetChars
                 else [||]
+let dotNetRuntimeLocation = __SOURCE_DIRECTORY__ + "/data/dotNetLoc.txt" |> System.IO.File.ReadAllText |> _.Trim()
+let dotnetRuntime = if dotNetRuntimeLocation <> "" then dotNetRuntimeLocation
+                                                        |> System.IO.File.ReadAllBytes
+                                                        |> System.Text.Encoding.UTF8.GetChars
+                    else [||]
 
 
 module PatternsTwain =
@@ -235,6 +240,52 @@ module PatternsEngWiki =
     
     [<Literal>]
     let QUOTES = @"[""'][^""']{0,30}[?!\.][""']"
+    
+    
+module PatternsDotNetRuntime =
+    
+    [<Literal>]
+    let REGEX = @"Regex"
+    
+    [<Literal>]
+    let REGEX_CASEIGNORE = @"(?i)Regex"
+    
+    [<Literal>]
+    let STRING_REGEX = @"String[A-Za-z]+|Regex[A-Za-z]+"
+    
+    [<Literal>]
+    let OPTIONS_ALTERNATION_LONG = @"RegexOptions\.Compiled|RegexOptions\.CultureInvariant|RegexOptions\.None|RegexOptions\.NonBacktracking"
+    
+    [<Literal>]
+    let OPTIONS_ALTERNATION_SHORT = @"\.Compiled|\.CultureInvariant|\.None|\.NonBacktracking"
+    
+    [<Literal>]
+    let OPTIONS_ALTERNATION_SHORT_CASEIGNORE = @"(?i)\.Compiled|\.CultureInvariant|\.None|\.NonBacktracking"
+    
+    [<Literal>]
+    let ACCESS = @"public|private|protected|internal"
+    
+    [<Literal>]
+    let ATTRIBUTE = @"[A-Za-z0-9_]+Attribute"
+    
+    [<Literal>]
+    let DOUBLE_UNDERSCORE = @"[A-Za-z0-9_]*__[A-Za-z0-9_]*"
+    
+    [<Literal>]
+    let INTERFACE = @"\WI[A-Z][A-Za-z0-9_]+"
+    
+    [<Literal>]
+    let PRIVATE = @"_[A-Za-z0-9_]+"
+    
+    [<Literal>]
+    let UNICODE = @"\\u[A-Fa-f0-9]{4,4}"
+    
+    [<Literal>]
+    let TWO_DOTS = @"[^.]\.\.[^.]"
+    
+    [<Literal>]
+    let SMALL_BLOCK = @"\{[^{}]*\}"
+
 
 
 type BenchmarkConfig() as self =
@@ -505,6 +556,68 @@ type MatchStartOptimizationEngWiki () =
     [<Benchmark>]
     member this.DotnetNonBacktracking() =
         this.regexDotNetCompiled.Count(engWiki)
+        
+
+
+[<Config(typedefof<BenchmarkConfig>)>]
+[<MemoryDiagnoser(true)>]
+// [<ShortRunJob>]
+type MatchStartOptimizationDotNetRuntime () =
+    
+
+    [<Params(
+        PatternsDotNetRuntime.REGEX,
+        PatternsDotNetRuntime.REGEX_CASEIGNORE,
+        PatternsDotNetRuntime.STRING_REGEX,
+        PatternsDotNetRuntime.OPTIONS_ALTERNATION_LONG,
+        PatternsDotNetRuntime.OPTIONS_ALTERNATION_SHORT,
+        PatternsDotNetRuntime.OPTIONS_ALTERNATION_SHORT_CASEIGNORE,
+        PatternsDotNetRuntime.ACCESS,
+        PatternsDotNetRuntime.ATTRIBUTE,
+        PatternsDotNetRuntime.DOUBLE_UNDERSCORE,
+        PatternsDotNetRuntime.INTERFACE,
+        PatternsDotNetRuntime.PRIVATE,
+        PatternsDotNetRuntime.UNICODE,
+        PatternsDotNetRuntime.TWO_DOTS,
+        PatternsDotNetRuntime.SMALL_BLOCK
+    )>]
+    member val rs: string = "" with get, set
+    
+    member val regex: Regex = Regex("") with get, set
+    member val regexDotNetCompiled: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    member val regexDotNetNBT: System.Text.RegularExpressions.Regex = System.Text.RegularExpressions.Regex("") with get, set
+    
+    [<GlobalSetup(Target = "OptimizedRESharp")>]
+    member this.OptimizedRESharpSetup() =
+        this.regex <- Regex(this.rs)
+
+    [<Benchmark>]
+    member this.OptimizedRESharp() =
+        this.regex.Count(dotnetRuntime)
+    
+    [<GlobalSetup(Target = "DotnetCompiled")>]
+    member this.DotnetCompiledSetup() =
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.Compiled
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    [<Benchmark>]
+    member this.DotnetCompiled() =
+        this.regexDotNetCompiled.Count(dotnetRuntime)
+    
+    [<GlobalSetup(Target = "DotnetNonBacktracking")>]
+    member this.DotnetNonBacktrackingSetup() =
+        this.regexDotNetCompiled <- System.Text.RegularExpressions.Regex(
+            this.rs,
+            options = System.Text.RegularExpressions.RegexOptions.NonBacktracking
+            // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        )
+
+    [<Benchmark>]
+    member this.DotnetNonBacktracking() =
+        this.regexDotNetCompiled.Count(dotnetRuntime)
         
         
         

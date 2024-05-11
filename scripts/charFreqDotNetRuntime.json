@@ -1,0 +1,2924 @@
+{
+  "characters": [
+    {
+      "character": " ",
+      "frequency": 25.670091
+    },
+    {
+      "character": "e",
+      "frequency": 5.297915
+    },
+    {
+      "character": "t",
+      "frequency": 3.964911
+    },
+    {
+      "character": "a",
+      "frequency": 3.269269
+    },
+    {
+      "character": "(",
+      "frequency": 3.136120
+    },
+    {
+      "character": ")",
+      "frequency": 3.136028
+    },
+    {
+      "character": "s",
+      "frequency": 3.063842
+    },
+    {
+      "character": "r",
+      "frequency": 3.047822
+    },
+    {
+      "character": "n",
+      "frequency": 2.880567
+    },
+    {
+      "character": "i",
+      "frequency": 2.828519
+    },
+    {
+      "character": "o",
+      "frequency": 2.451742
+    },
+    {
+      "character": "\u002B",
+      "frequency": 2.365081
+    },
+    {
+      "character": "l",
+      "frequency": 2.175804
+    },
+    {
+      "character": "\r",
+      "frequency": 1.902662
+    },
+    {
+      "character": "\n",
+      "frequency": 1.902662
+    },
+    {
+      "character": "u",
+      "frequency": 1.631532
+    },
+    {
+      "character": "c",
+      "frequency": 1.620548
+    },
+    {
+      "character": ".",
+      "frequency": 1.562064
+    },
+    {
+      "character": "d",
+      "frequency": 1.385243
+    },
+    {
+      "character": "m",
+      "frequency": 1.201590
+    },
+    {
+      "character": "p",
+      "frequency": 1.201238
+    },
+    {
+      "character": ",",
+      "frequency": 1.129098
+    },
+    {
+      "character": "0",
+      "frequency": 1.100623
+    },
+    {
+      "character": "f",
+      "frequency": 1.058781
+    },
+    {
+      "character": "b",
+      "frequency": 1.018010
+    },
+    {
+      "character": "x",
+      "frequency": 0.875726
+    },
+    {
+      "character": "h",
+      "frequency": 0.814442
+    },
+    {
+      "character": "y",
+      "frequency": 0.803593
+    },
+    {
+      "character": "g",
+      "frequency": 0.797759
+    },
+    {
+      "character": ";",
+      "frequency": 0.706696
+    },
+    {
+      "character": "1",
+      "frequency": 0.672836
+    },
+    {
+      "character": "/",
+      "frequency": 0.633068
+    },
+    {
+      "character": "v",
+      "frequency": 0.545942
+    },
+    {
+      "character": "=",
+      "frequency": 0.545208
+    },
+    {
+      "character": "2",
+      "frequency": 0.543747
+    },
+    {
+      "character": "A",
+      "frequency": 0.540428
+    },
+    {
+      "character": "T",
+      "frequency": 0.539251
+    },
+    {
+      "character": "_",
+      "frequency": 0.537770
+    },
+    {
+      "character": "\u0022",
+      "frequency": 0.514260
+    },
+    {
+      "character": "[",
+      "frequency": 0.505454
+    },
+    {
+      "character": "]",
+      "frequency": 0.505366
+    },
+    {
+      "character": "S",
+      "frequency": 0.489274
+    },
+    {
+      "character": "C",
+      "frequency": 0.458820
+    },
+    {
+      "character": "3",
+      "frequency": 0.421074
+    },
+    {
+      "character": "w",
+      "frequency": 0.418509
+    },
+    {
+      "character": "E",
+      "frequency": 0.396616
+    },
+    {
+      "character": "I",
+      "frequency": 0.375216
+    },
+    {
+      "character": "k",
+      "frequency": 0.335120
+    },
+    {
+      "character": "6",
+      "frequency": 0.331322
+    },
+    {
+      "character": "{",
+      "frequency": 0.301108
+    },
+    {
+      "character": "}",
+      "frequency": 0.301010
+    },
+    {
+      "character": "D",
+      "frequency": 0.284725
+    },
+    {
+      "character": "4",
+      "frequency": 0.284454
+    },
+    {
+      "character": "F",
+      "frequency": 0.279356
+    },
+    {
+      "character": "\u003E",
+      "frequency": 0.278802
+    },
+    {
+      "character": "5",
+      "frequency": 0.265809
+    },
+    {
+      "character": "N",
+      "frequency": 0.251098
+    },
+    {
+      "character": "\u003C",
+      "frequency": 0.248669
+    },
+    {
+      "character": "j",
+      "frequency": 0.246452
+    },
+    {
+      "character": "R",
+      "frequency": 0.244241
+    },
+    {
+      "character": "7",
+      "frequency": 0.237447
+    },
+    {
+      "character": "M",
+      "frequency": 0.211245
+    },
+    {
+      "character": "q",
+      "frequency": 0.209680
+    },
+    {
+      "character": "8",
+      "frequency": 0.208698
+    },
+    {
+      "character": "P",
+      "frequency": 0.208634
+    },
+    {
+      "character": "9",
+      "frequency": 0.198606
+    },
+    {
+      "character": "L",
+      "frequency": 0.187865
+    },
+    {
+      "character": "O",
+      "frequency": 0.179892
+    },
+    {
+      "character": "V",
+      "frequency": 0.177200
+    },
+    {
+      "character": "\t",
+      "frequency": 0.166674
+    },
+    {
+      "character": "B",
+      "frequency": 0.160921
+    },
+    {
+      "character": "-",
+      "frequency": 0.154039
+    },
+    {
+      "character": "z",
+      "frequency": 0.138772
+    },
+    {
+      "character": ":",
+      "frequency": 0.137755
+    },
+    {
+      "character": "G",
+      "frequency": 0.126172
+    },
+    {
+      "character": "W",
+      "frequency": 0.114843
+    },
+    {
+      "character": "H",
+      "frequency": 0.107036
+    },
+    {
+      "character": "U",
+      "frequency": 0.100174
+    },
+    {
+      "character": "\\",
+      "frequency": 0.083844
+    },
+    {
+      "character": "?",
+      "frequency": 0.081678
+    },
+    {
+      "character": "X",
+      "frequency": 0.077190
+    },
+    {
+      "character": "\u0026",
+      "frequency": 0.054959
+    },
+    {
+      "character": "!",
+      "frequency": 0.052714
+    },
+    {
+      "character": "*",
+      "frequency": 0.049304
+    },
+    {
+      "character": "|",
+      "frequency": 0.046801
+    },
+    {
+      "character": "\u0027",
+      "frequency": 0.044158
+    },
+    {
+      "character": "K",
+      "frequency": 0.040887
+    },
+    {
+      "character": "Q",
+      "frequency": 0.031941
+    },
+    {
+      "character": "J",
+      "frequency": 0.025636
+    },
+    {
+      "character": "Z",
+      "frequency": 0.022336
+    },
+    {
+      "character": "Y",
+      "frequency": 0.020212
+    },
+    {
+      "character": "^",
+      "frequency": 0.012324
+    },
+    {
+      "character": "#",
+      "frequency": 0.011530
+    },
+    {
+      "character": "@",
+      "frequency": 0.006915
+    },
+    {
+      "character": "$",
+      "frequency": 0.006588
+    },
+    {
+      "character": "%",
+      "frequency": 0.004342
+    },
+    {
+      "character": "\u0060",
+      "frequency": 0.001610
+    },
+    {
+      "character": "~",
+      "frequency": 0.001140
+    },
+    {
+      "character": "\uFEFF",
+      "frequency": 0.000709
+    },
+    {
+      "character": "\u6708",
+      "frequency": 0.000083
+    },
+    {
+      "character": "\u0BCD",
+      "frequency": 0.000053
+    },
+    {
+      "character": "\u03BF",
+      "frequency": 0.000032
+    },
+    {
+      "character": "\u0BAA",
+      "frequency": 0.000031
+    },
+    {
+      "character": "\u0440",
+      "frequency": 0.000030
+    },
+    {
+      "character": "\u09CD",
+      "frequency": 0.000028
+    },
+    {
+      "character": "\u0435",
+      "frequency": 0.000028
+    },
+    {
+      "character": "\u0430",
+      "frequency": 0.000025
+    },
+    {
+      "character": "\u0131",
+      "frequency": 0.000024
+    },
+    {
+      "character": "\u0627",
+      "frequency": 0.000024
+    },
+    {
+      "character": "\u09B0",
+      "frequency": 0.000024
+    },
+    {
+      "character": "\u043D",
+      "frequency": 0.000024
+    },
+    {
+      "character": "\u03C5",
+      "frequency": 0.000023
+    },
+    {
+      "character": "\u0BBF",
+      "frequency": 0.000023
+    },
+    {
+      "character": "\u0130",
+      "frequency": 0.000021
+    },
+    {
+      "character": "\u0631",
+      "frequency": 0.000021
+    },
+    {
+      "character": "\u0BB0",
+      "frequency": 0.000020
+    },
+    {
+      "character": "\u03C1",
+      "frequency": 0.000019
+    },
+    {
+      "character": "\u0442",
+      "frequency": 0.000018
+    },
+    {
+      "character": "\u09C7",
+      "frequency": 0.000018
+    },
+    {
+      "character": "\u00E1",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0930",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u09AC",
+      "frequency": 0.000017
+    },
+    {
+      "character": "\u0644",
+      "frequency": 0.000016
+    },
+    {
+      "character": "\u03B1",
+      "frequency": 0.000016
+    },
+    {
+      "character": "\u0432",
+      "frequency": 0.000016
+    },
+    {
+      "character": "\u0CCD",
+      "frequency": 0.000016
+    },
+    {
+      "character": "\u09BE",
+      "frequency": 0.000015
+    },
+    {
+      "character": "\u0BAE",
+      "frequency": 0.000015
+    },
+    {
+      "character": "\u0441",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u00E4",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u09AE",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u0B95",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u03B5",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u05D9",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u094D",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u043E",
+      "frequency": 0.000014
+    },
+    {
+      "character": "\u0438",
+      "frequency": 0.000013
+    },
+    {
+      "character": "\u043F",
+      "frequency": 0.000013
+    },
+    {
+      "character": "\uC6D4",
+      "frequency": 0.000013
+    },
+    {
+      "character": "\u0D4D",
+      "frequency": 0.000013
+    },
+    {
+      "character": "\u062F",
+      "frequency": 0.000013
+    },
+    {
+      "character": "\u0CB0",
+      "frequency": 0.000012
+    },
+    {
+      "character": "\u03BC",
+      "frequency": 0.000012
+    },
+    {
+      "character": "\u0634",
+      "frequency": 0.000012
+    },
+    {
+      "character": "\u0628",
+      "frequency": 0.000012
+    },
+    {
+      "character": "\u05D5",
+      "frequency": 0.000012
+    },
+    {
+      "character": "\u0B9C",
+      "frequency": 0.000012
+    },
+    {
+      "character": "\u09C1",
+      "frequency": 0.000012
+    },
+    {
+      "character": "\u0B9A",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u0647",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u0C4D",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u0645",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u03AF",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u03C4",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u043B",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u03C0",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u0646",
+      "frequency": 0.000011
+    },
+    {
+      "character": "\u09A8",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u044F",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u0B9F",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u00E9",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u0AB0",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u0BB5",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u0C30",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u0433",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u03B2",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u09B8",
+      "frequency": 0.000010
+    },
+    {
+      "character": "\u0ACD",
+      "frequency": 0.000009
+    },
+    {
+      "character": "\u043C",
+      "frequency": 0.000009
+    },
+    {
+      "character": "\u043A",
+      "frequency": 0.000009
+    },
+    {
+      "character": "\u09BF",
+      "frequency": 0.000009
+    },
+    {
+      "character": "\u0BA9",
+      "frequency": 0.000009
+    },
+    {
+      "character": "\u099F",
+      "frequency": 0.000009
+    },
+    {
+      "character": "\u099C",
+      "frequency": 0.000009
+    },
+    {
+      "character": "\u0431",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u65E5",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u0434",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u0399",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u0648",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u0443",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u05E8",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u0BC2",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u0BB2",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u0E21",
+      "frequency": 0.000008
+    },
+    {
+      "character": "\u03B9",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u05F3",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0938",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0928",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0E32",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0E04",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u6F22",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u00F1",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0935",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0391",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0E19",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u062C",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u010D",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0CC6",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u0947",
+      "frequency": 0.000007
+    },
+    {
+      "character": "\u09B2",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u09AA",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u06CC",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u05D0",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u039C",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u03BB",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u093E",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0639",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0C3F",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u03AC",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u05D1",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0CBF",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u093F",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0917",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0BBE",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u03BA",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u091C",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u03C2",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\uFE0F",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0AC1",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u092E",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u092C",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0941",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u03BD",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0AC7",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u0932",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u044C",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u25CB",
+      "frequency": 0.000006
+    },
+    {
+      "character": "\u00FA",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0CA8",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0D3F",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0902",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0BC6",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0C02",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0E1E",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0CB5",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0E22",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u044E",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u092A",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0E01",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0AAE",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0C82",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u0ABE",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u2714",
+      "frequency": 0.000005
+    },
+    {
+      "character": "\u00C9",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0447",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0997",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0AB8",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0CBE",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0CC1",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0D35",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u5341",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u09CB",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0D3E",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u00E7",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0C41",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u05DE",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0458",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0BA8",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0E31",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0629",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0995",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0AA8",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0CB8",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0CAC",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0622",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u00FB",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u05E0",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u05E4",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0970",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u017E",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0B8F",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0BC7",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0BC8",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0B86",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0B85",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u062E",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u122D",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0AAC",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0CAE",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0D2C",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0C2C",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0C28",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u4E00",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u4E8C",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0642",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u03B3",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0C9C",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u0C35",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u5143",
+      "frequency": 0.000004
+    },
+    {
+      "character": "\u064A",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0633",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0394",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u03A3",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D7C",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D1A",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D02",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u09A1",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u2019",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0159",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u09AF",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u516C",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0623",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0AB5",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0ABF",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u05DD",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\uC77C",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u094B",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C38",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C2E",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0649",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u121D",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u03A6",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0942",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C9F",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D31",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C46",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u03CD",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u5E74",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u062A",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u200C",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C97",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0915",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0641",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0630",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0444",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u09AB",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u099A",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u098F",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0986",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0985",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u09AD",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0A9C",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0A9F",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u05DC",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0905",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0CAA",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D1C",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D30",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C1C",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C3E",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0456",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u09BC",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u5348",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u062D",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0A97",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u05E9",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C95",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D2F",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D41",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D46",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0D28",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0C17",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0983",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u039F",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u039D",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0E34",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u0940",
+      "frequency": 0.000003
+    },
+    {
+      "character": "\u03AD",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u05D4",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0161",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0C15",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u1295",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u122A",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0987",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0924",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u016B",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0D38",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u091F",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0C1F",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u09C0",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u03AE",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u845B",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u00F6",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0CCB",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0CB6",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0D34",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0C36",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u4E09",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u56DB",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u4E94",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u516D",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0439",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u00ED",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0AB2",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u05E1",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0948",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0908",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E35",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0BB1",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u00FC",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E27",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E38",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0BCB",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0393",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0386",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u2208",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u03A4",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0ACB",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u05D2",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0BC1",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0C4B",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E28",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E2A",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u1355",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u12ED",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u1301",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u12A6",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u1234",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0390",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0AAA",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0A91",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u05D8",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u092B",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u091A",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0CB2",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0D2E",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0D2A",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0D42",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0911",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0C2A",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E18",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u015E",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u011F",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E17",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u66DC",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E23",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u661F",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u671F",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u1260",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0BB8",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u03C6",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0392",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\uFFFD",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u062B",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u121B",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u12D3",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u09C3",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0A95",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0D15",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0936",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0C06",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E2D",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E24",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u5468",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0D21",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0C32",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0E40",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0101",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u03C3",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\uC694",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0996",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0624",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u041A",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u044B",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u0448",
+      "frequency": 0.000002
+    },
+    {
+      "character": "\u1230",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u12AD",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1235",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1265",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u121C",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u09B6",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00F8",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u03A0",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0AB6",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u05D3",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0113",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0BAF",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u011B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0A88",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u05E6",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0926",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0CC2",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C85",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0CA1",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D32",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E07",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00D6",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E4C",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1EE9",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u03A7",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u897F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u4E03",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u516B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u4E5D",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0144",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00E6",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00A0",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u015B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D33",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0BA4",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0BB3",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E08",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0635",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0AA1",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0CAB",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C9A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C8F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0CC7",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0CC8",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C86",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D17",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D1F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0921",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0446",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C47",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C21",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E15",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E48",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u4E0A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u03B7",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00EC",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u4E0B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00E5",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u2264",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u007F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0621",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0636",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1303",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u12E9",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u134C",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1229",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u127D",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u12A4",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u120B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1308",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1274",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1276",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1296",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u126C",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u12F2",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0AAF",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0AAB",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0A9A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0A8F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0AC2",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u05E5",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u05E7",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u093C",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D2B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D0F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D47",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D7A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D48",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D13",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D12",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D4B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u090F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0939",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u017A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C2B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C1A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C0F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C42",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C48",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C05",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0436",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1275",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u044A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u05D7",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0103",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E2B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u060C",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u09B7",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u09A6",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u66A6",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u12C8",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u03C9",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0A86",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0AC0",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00F3",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0117",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E20",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E29",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u041F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0421",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u12A5",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u129E",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1228",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1210",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u1245",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u039A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0686",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u067E",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0A82",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u706B",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u6C34",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u6728",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u91D1",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u571F",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0CAD",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\uD654",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\uC218",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\uBAA9",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\uAE08",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\uD1A0",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D1E",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D24",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D4A",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D36",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0B9E",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u00C7",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0425",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0D0E",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0907",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u044D",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0C40",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0E25",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u0412",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u3128",
+      "frequency": 0.000001
+    },
+    {
+      "character": "\u2013",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0107",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1211",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12F5",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1261",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12D5",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1219",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12F3",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0999",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u09A7",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u09B9",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u09A4",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u06A9",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0AB3",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0AA7",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u05EA",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0CB3",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0CA7",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D19",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D27",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0927",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u00E2",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0B99",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0C26",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0C33",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0C27",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0632",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0638",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u05F4",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0CB9",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uC624",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u00FD",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u013E",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u015F",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uB144",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u200D",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u120D",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u012B",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D7D",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0E16",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0E0E",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0437",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u03CE",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12E8",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u00E0",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u03CC",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u092F",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0CAF",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0C2F",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u010C",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0427",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u039B",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0389",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u201C",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u201D",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D7E",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D7B",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0933",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1325",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12CB",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u524D",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uC804",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u00E3",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u05DF",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u05E2",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0151",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0142",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0105",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u021B",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0BB4",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0E1A",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0E14",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u02BC",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1EE7",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1EAD",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u01B0",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1EA3",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0640",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0A87",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0625",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u130D",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u130E",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12EB",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1240",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12A0",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1246",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1323",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1320",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0A85",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u30B0",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u30EC",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u30B4",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u30EA",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u30AA",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uC591",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uB825",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D07",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D40",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D37",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0D23",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0E1B",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0E0F",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u1ECB",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u5386",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u66C6",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u12A8",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u5F8C",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uD6C4",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0909",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u00DA",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0160",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u015A",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u041D",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0001",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0003",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0002",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uC1FF",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\uBFFF",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u0014",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u00AE",
+      "frequency": 0.000000
+    },
+    {
+      "character": "\u00A9",
+      "frequency": 0.000000
+    }
+  ]
+}

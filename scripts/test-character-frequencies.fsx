@@ -95,6 +95,11 @@ let freqsW9 = findLetterCounts (wikipedia9, wikipedia9.Length, symbolCount)
 writeCharFrequenciesToJsonFile freqsW9 (__SOURCE_DIRECTORY__ + "/charFreqWikipedia9-" + symbolCount.ToString() + ".json") symbolCount true
 
 
+let dotnet = "C:\Users\Name\Documents\TalTech\Loputoo\.NET Runtime\dotnet.txt" |> System.IO.File.ReadAllText
+let freqsDN = findLetterCounts (dotnet, dotnet.Length, dotnet.Length)
+writeCharFrequenciesToJsonFile freqsDN (__SOURCE_DIRECTORY__ + "/charFreqDotNetRuntime.json") dotnet.Length true
+
+
 
 // Converting to CSV for analysis
 
@@ -126,7 +131,7 @@ let convertJsonToCsv inputFile outputFile =
     System.IO.File.WriteAllText(outputFile, csvStr)
 
 
-convertJsonToCsv (__SOURCE_DIRECTORY__ + "/charFreqTammsaare-100000.json") (__SOURCE_DIRECTORY__ + "/charFreqTammsaare-100000.csv")
+convertJsonToCsv (__SOURCE_DIRECTORY__ + "/charFreqDotNetRuntime.json") (__SOURCE_DIRECTORY__ + "/charFreqDotNetRuntime.csv")
 
 
 // Get all symbols

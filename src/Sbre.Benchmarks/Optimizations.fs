@@ -25,6 +25,7 @@ open System.Buffers
 let twain = __SOURCE_DIRECTORY__ + "/data/input-text.txt" |> System.IO.File.ReadAllText
 let sherlock = __SOURCE_DIRECTORY__ + "/data/sherlock.txt" |> System.IO.File.ReadAllText
 let subtitlesMed = __SOURCE_DIRECTORY__ + "/data/en-medium.txt" |> System.IO.File.ReadAllText
+let dotnetRuntime = "C:\Users\Name\Documents\TalTech\Loputoo\.NET Runtime\dotnet.txt" |> System.IO.File.ReadAllText
 // let rust = __SOURCE_DIRECTORY__ + "/data/rust-src-tools-3b0d4813.txt" |> System.IO.File.ReadAllText
 
 let testInput =
@@ -232,10 +233,14 @@ type PrefixCharsetSearch () =
         
         // let a = this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
-        this.regex <- Regex("[a-zõäöüšž]")
+        this.regex <- Regex("[^.]\.\.[^.]")
         // this.regex.TSetMatcher.SetCharacterWeights(twainWeights100)
         // this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
-        let c = this.regex.Count("aõäöüszxyšž")
+        
+        let c = this.regex.Count(dotnetRuntime)
+        
+        // Console.WriteLine(c |> Seq.length)
+        Console.WriteLine(c)
         ()
     
     member this.MatchCountTesting() =
