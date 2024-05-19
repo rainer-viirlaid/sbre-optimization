@@ -69,6 +69,12 @@ module PatternsTwain =
     let D24_TOM_SAWYER_HUCKLEBERRY_FINN = @".{2,4}(Tom|Sawyer|Huckleberry|Finn)"
 
     [<Literal>]
+    let TOM_SAWYER_HUCKLEBERRY_FINN_D02 = @"(Tom|Sawyer|Huckleberry|Finn).{0,2}"
+
+    [<Literal>]
+    let TOM_SAWYER_HUCKLEBERRY_FINN_D24 = @"(Tom|Sawyer|Huckleberry|Finn).{2,4}"
+
+    [<Literal>]
     let TOM_RIVER = @"Tom.{10,25}river|river.{10,25}Tom"
 
     [<Literal>]
@@ -309,25 +315,27 @@ type MatchStartOptimizationTwain () =
     
 
     [<Params(
-        PatternsTwain.TWAIN,
-        PatternsTwain.TWAIN_CASEIGNORE,
-        PatternsTwain.AZ_SHING,
-        PatternsTwain.HUCK_SAW,
-        PatternsTwain.WORD_END,
-        PatternsTwain.AQ_X,
-        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN,
-        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        // PatternsTwain.TWAIN,
+        // PatternsTwain.TWAIN_CASEIGNORE,
+        // PatternsTwain.AZ_SHING,
+        // PatternsTwain.HUCK_SAW,
+        // PatternsTwain.WORD_END,
+        // PatternsTwain.AQ_X,
+        // PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN,
+        // PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
         PatternsTwain.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
         PatternsTwain.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
-        PatternsTwain.TOM_RIVER,
-        PatternsTwain.AZ_ING,
-        PatternsTwain.AZ_ING_SPACES,
-        PatternsTwain.AZ_AWYER_INN,
-        PatternsTwain.QUOTES,
-
-        PatternsTwain.HUCK_AZ,
-        PatternsTwain.AZ_UCK_AZ,
-        PatternsTwain.H_AZ_CK_AZ
+        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_D02,
+        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_D24
+        // PatternsTwain.TOM_RIVER,
+        // PatternsTwain.AZ_ING,
+        // PatternsTwain.AZ_ING_SPACES,
+        // PatternsTwain.AZ_AWYER_INN,
+        // PatternsTwain.QUOTES,
+        //
+        // PatternsTwain.HUCK_AZ,
+        // PatternsTwain.AZ_UCK_AZ,
+        // PatternsTwain.H_AZ_CK_AZ
     )>]
     member val rs: string = "" with get, set
     
@@ -351,7 +359,7 @@ type MatchStartOptimizationTwain () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.DotnetCompiled() =
         this.regexDotNetCompiled.Count(twain)
     
@@ -363,7 +371,7 @@ type MatchStartOptimizationTwain () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    [<Benchmark>]
+    // [<Benchmark>]
     member this.DotnetNonBacktracking() =
         this.regexDotNetCompiled.Count(twain)
         
