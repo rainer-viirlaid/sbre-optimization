@@ -359,7 +359,7 @@ type MatchStartOptimizationTwain () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.DotnetCompiled() =
         this.regexDotNetCompiled.Count(twain)
     
@@ -371,7 +371,7 @@ type MatchStartOptimizationTwain () =
             // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
         )
 
-    // [<Benchmark>]
+    [<Benchmark>]
     member this.DotnetNonBacktracking() =
         this.regexDotNetCompiled.Count(twain)
         
