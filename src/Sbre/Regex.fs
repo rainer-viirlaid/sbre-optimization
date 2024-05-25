@@ -695,6 +695,15 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
         else
             setsOptimization
     
+    let _useStringEndAndSkipOtherOpts =
+        decideIfAllButStringEndShouldBeSkipped
+            (fun (mt, node) ->
+                let mutable loc = Location.getNonInitial ()
+                _createDerivative (&loc, mt, node))
+
+            (fun node -> _getOrCreateState(reverseTrueStarredNode, node, false).Flags)
+            _cache
+            reverseNode
                                          
     let mutable _initialOptimization = _availableInitialOptimizations[_selectOptimization()]
     
@@ -891,7 +900,9 @@ type RegexMatcher<'t when 't: struct and 't :> IEquatable<'t> and 't: equality>
     /// counts the number of matches
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     override this.Count(input) =
-        if _calculateWeightsAutomatically && input.Length > 50_000 then
+        if _useStringEndAndSkipOtherOpts && _selectOptimizationAutomatically then
+            _setOptimization(StartSearchOptimization.StringEnd)
+        else if _calculateWeightsAutomatically && input.Length > 50_000 then
             let symbolCount = min 10_000 (int (float input.Length * 0.01))
             this.SetWeightsFromText(input, symbolCount)
             _calculateWeightsAutomatically <- true

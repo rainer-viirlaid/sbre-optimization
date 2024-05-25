@@ -315,23 +315,23 @@ type MatchStartOptimizationTwain () =
     
 
     [<Params(
-        // PatternsTwain.TWAIN,
-        // PatternsTwain.TWAIN_CASEIGNORE,
-        // PatternsTwain.AZ_SHING,
-        // PatternsTwain.HUCK_SAW,
-        // PatternsTwain.WORD_END,
-        // PatternsTwain.AQ_X,
-        // PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN,
-        // PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
+        PatternsTwain.TWAIN,
+        PatternsTwain.TWAIN_CASEIGNORE,
+        PatternsTwain.AZ_SHING,
+        PatternsTwain.HUCK_SAW,
+        PatternsTwain.WORD_END,
+        PatternsTwain.AQ_X,
+        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN,
+        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_CASEIGNORE,
         PatternsTwain.D02_TOM_SAWYER_HUCKLEBERRY_FINN,
         PatternsTwain.D24_TOM_SAWYER_HUCKLEBERRY_FINN,
         PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_D02,
-        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_D24
-        // PatternsTwain.TOM_RIVER,
-        // PatternsTwain.AZ_ING,
-        // PatternsTwain.AZ_ING_SPACES,
-        // PatternsTwain.AZ_AWYER_INN,
-        // PatternsTwain.QUOTES,
+        PatternsTwain.TOM_SAWYER_HUCKLEBERRY_FINN_D24,
+        PatternsTwain.TOM_RIVER,
+        PatternsTwain.AZ_ING,
+        PatternsTwain.AZ_ING_SPACES,
+        PatternsTwain.AZ_AWYER_INN,
+        PatternsTwain.QUOTES
         //
         // PatternsTwain.HUCK_AZ,
         // PatternsTwain.AZ_UCK_AZ,
@@ -634,7 +634,11 @@ type MatchCountingCorrectness () =
     
     member this.ManualTesting() =
         // this.MatchCountTestingEstWiki()
-        this.MatchCountTestingEngWiki()
+        // this.MatchCountTestingTwain()
+        // this.MatchCountTestingTammsaare()
+        // this.MatchCountTestingEstWiki()
+        // this.MatchCountTestingEngWiki()
+        this.MatchCountTestingDotNetRuntime()
     
     member this.MatchCountTestingTwain() =
         let pats = [|
@@ -658,18 +662,23 @@ type MatchCountingCorrectness () =
             PatternsTwain.AZ_UCK_AZ         // 706
             PatternsTwain.H_AZ_CK_AZ        // 97
         |]
+        let counts = [|811; 965; 1540; 262; 262; 4094; 2598; 4152; 2598; 1976; 2; 78423; 55248; 209; 8885; 56; 706; 97|]
+        let mutable i = 0;
         for pat in pats do
             let regex = Regex(pat)
             let count = regex.Count(twain)
+            if not (counts[i] = count) then
+                raise (Exception("Twain " + i.ToString() + " " + pat))
+            i <- i + 1
             ()
-        for pat in pats do
-            let compiled = System.Text.RegularExpressions.Regex(
-                pat,
-                options = System.Text.RegularExpressions.RegexOptions.Compiled,
-                matchTimeout = TimeSpan.FromMilliseconds(10_000.)
-            )
-            let count = compiled.Count(twain)
-            ()
+        // for pat in pats do
+        //     let compiled = System.Text.RegularExpressions.Regex(
+        //         pat,
+        //         options = System.Text.RegularExpressions.RegexOptions.Compiled,
+        //         matchTimeout = TimeSpan.FromMilliseconds(10_000.)
+        //     )
+        //     let count = compiled.Count(twain)
+        //     ()
     
     member this.MatchCountTestingTammsaare() =
         let pats = [|
@@ -689,25 +698,30 @@ type MatchCountingCorrectness () =
             PatternsTammsaare.AZ_EARU_NDRES         // 1845
             PatternsTammsaare.QUOTES                // 4923
         |]
+        let counts = [|15; 22; 1603; 3420; 260; 2133; 4049; 4051; 4049; 3800; 9; 20994; 8782; 1845; 4923|]
+        let mutable i = 0;
         for pat in pats do
             let regex = Regex(pat)
             let count = regex.Count(tammsaare)
+            if not (counts[i] = count) then
+                raise (Exception("Tammsaare " + i.ToString() + " " + pat))
+            i <- i + 1
             ()
-        for pat in pats do
-            let compiled = System.Text.RegularExpressions.Regex(
-                pat,
-                options = System.Text.RegularExpressions.RegexOptions.Compiled,
-                matchTimeout = TimeSpan.FromMilliseconds(10_000.)
-            )
-            let count = compiled.Count(tammsaare)
-            ()
+        // for pat in pats do
+        //     let compiled = System.Text.RegularExpressions.Regex(
+        //         pat,
+        //         options = System.Text.RegularExpressions.RegexOptions.Compiled,
+        //         matchTimeout = TimeSpan.FromMilliseconds(10_000.)
+        //     )
+        //     let count = compiled.Count(tammsaare)
+        //     ()
     
     member this.MatchCountTestingEstWiki() =
         let pats = [|
             PatternsEstWiki.EESTI            // 589249
             PatternsEstWiki.ROOTSI           // 56211
             PatternsEstWiki.EESTI_CASEIGNORE // 733450
-            PatternsEstWiki.AZ_EE            // 2545307
+            PatternsEstWiki.AZ_EE            // 2553703
             PatternsEstWiki.HELI_AJA_AZ      // 54998, sbre timeout
             PatternsEstWiki.AQ_X             // 777653
             PatternsEstWiki.TOOMAS_MARGUS_REIN_JAAN             // 83711
@@ -715,24 +729,29 @@ type MatchCountingCorrectness () =
             PatternsEstWiki.D02_TOOMAS_MARGUS_REIN_JAAN         // 83711
             PatternsEstWiki.D24_TOOMAS_MARGUS_REIN_JAAN         // 83408
             PatternsEstWiki.EESTI_JOGI       // 206
-            PatternsEstWiki.AZ_TUD           // 842963
-            PatternsEstWiki.AZ_TUD_SPACES    // 540338, sbre slow
-            PatternsEstWiki.AZ_INA_EIN       // 175971
-            PatternsEstWiki.QUOTES           // 30371
+            PatternsEstWiki.AZ_TUD           // 843050
+            PatternsEstWiki.AZ_TUD_SPACES    // 540457, sbre slow
+            PatternsEstWiki.AZ_INA_EIN       // 179426
+            PatternsEstWiki.QUOTES           // 30544
             PatternsEstWiki.CURRENCY         // 8674
         |]
+        let counts = [|589249; 56211; 733450; 2553703; 54999; 777653; 83711; 246103; 83711; 83408; 206; 843050; 540457; 179426; 30544; 8674|]
+        let mutable i = 0;
         for pat in pats do
             let regex = Regex(pat)
             let count = regex.Count(estWiki)
+            if not (counts[i] = count) then
+                raise (Exception("EstWiki " + i.ToString() + " " + pat))
+            i <- i + 1
             ()
-        for pat in pats do
-            let compiled = System.Text.RegularExpressions.Regex(
-                pat,
-                options = System.Text.RegularExpressions.RegexOptions.Compiled
-                // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
-            )
-            let count = compiled.Count(estWiki)
-            ()
+        // for pat in pats do
+        //     let compiled = System.Text.RegularExpressions.Regex(
+        //         pat,
+        //         options = System.Text.RegularExpressions.RegexOptions.Compiled
+        //         // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        //     )
+        //     let count = compiled.Count(estWiki)
+        //     ()
     
     member this.MatchCountTestingEngWiki() =
         let pats = [|
@@ -743,26 +762,59 @@ type MatchCountingCorrectness () =
             PatternsEngWiki.WORD_END            // 73464
             PatternsEngWiki.AQ_X                // 463385
             PatternsEngWiki.PRESIDENTS_ALTERNATION              // 42464
-            PatternsEngWiki.PRESIDENTS_ALTERNATION_CASEIGNORE   // 51644
+            PatternsEngWiki.PRESIDENTS_ALTERNATION_CASEIGNORE   // 51664
             PatternsEngWiki.D02_PRESIDENTS_ALTERNATION          // 42464
             PatternsEngWiki.D24_PRESIDENTS_ALTERNATION          // 41855
             PatternsEngWiki.ROOSEVELT_RIVER     // 3
             PatternsEngWiki.AZ_ING              // 3095748
             PatternsEngWiki.AZ_ING_SPACES       // 1935049
             PatternsEngWiki.AZ_INCOLN_OOSEVELT  // 6234
-            PatternsEngWiki.QUOTES              // 15686
+            PatternsEngWiki.QUOTES              // 15906
         |]
+        let counts = [|7400; 8125; 75741; 19409; 73464; 463385; 42464; 51664; 42464; 41855; 3; 3095748; 1935049; 6234; 15906|]
+        let mutable i = 0;
         for pat in pats do
             let regex = Regex(pat)
             let count = regex.Count(engWiki)
+            if not (counts[i] = count) then
+                raise (Exception("EngWiki " + i.ToString() + " " + pat))
+            i <- i + 1
             ()
+        // for pat in pats do
+        //     let compiled = System.Text.RegularExpressions.Regex(
+        //         pat,
+        //         options = System.Text.RegularExpressions.RegexOptions.Compiled
+        //         // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
+        //     )
+        //     let count = compiled.Count(engWiki)
+        //     ()
+    
+    member this.MatchCountTestingDotNetRuntime() =
+        let pats = [|
+            PatternsDotNetRuntime.REGEX             // 15563
+            PatternsDotNetRuntime.REGEX_CASEIGNORE  // 16562
+            PatternsDotNetRuntime.STRING_REGEX      // 56066
+            PatternsDotNetRuntime.OPTIONS_ALTERNATION_LONG              // 5062
+            PatternsDotNetRuntime.OPTIONS_ALTERNATION_SHORT             // 14153
+            PatternsDotNetRuntime.OPTIONS_ALTERNATION_SHORT_CASEIGNORE  // 14262
+            PatternsDotNetRuntime.ACCESS            // 716381
+            PatternsDotNetRuntime.ATTRIBUTE         // 91945
+            PatternsDotNetRuntime.DOUBLE_UNDERSCORE // 17328
+            PatternsDotNetRuntime.INTERFACE         // 142913
+            PatternsDotNetRuntime.PRIVATE           // 1340451
+            PatternsDotNetRuntime.UNICODE           // 38664
+            PatternsDotNetRuntime.TWO_DOTS          // 4771
+            PatternsDotNetRuntime.SMALL_BLOCK       // 810290
+        |]
+        let counts = [|15563; 16562; 56066; 5062; 14153; 14262; 716381; 91945; 17328; 142913; 1340451; 38664; 4771; 810290|]
+        let mutable i = 0;
         for pat in pats do
-            let compiled = System.Text.RegularExpressions.Regex(
-                pat,
-                options = System.Text.RegularExpressions.RegexOptions.Compiled
-                // , matchTimeout = TimeSpan.FromMilliseconds(20_000.)
-            )
-            let count = compiled.Count(engWiki)
+            let regex = Regex(pat)
+            let count = regex.Count(dotnetRuntime)
+            if not (counts[i] = count) then
+                raise (Exception(".NET Runtime " + i.ToString() + " " + pat))
+            i <- i + 1
             ()
+        ()
         
 

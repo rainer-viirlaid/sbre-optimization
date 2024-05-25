@@ -1249,6 +1249,11 @@ let rec findAlternationBranches
     | RegexNode.Loop(node, low, up, _) ->
         if low = 0 && atBeginning then
             [|[||]|]
+        else if low <> 0 && atBeginning then
+            match node with
+            | RegexNode.Singleton charSet ->
+                [| [| charSet |] |> Array.replicate low |> Array.concat |]
+            | _ -> [||]
         else if low <> 0 && low = up then
             match node with
             | RegexNode.Singleton charSet ->
@@ -1345,3 +1350,36 @@ let calculateStringWeight (searchStr: string) (weights: IDictionary<char, float>
         0
     else
         mult / sum * (float 100)
+
+
+let decideIfAllButStringEndShouldBeSkipped
+    getNonInitialDerivative
+    (nodeToStateFlags: RegexNode<'t> -> RegexStateFlags)
+    (c: RegexCache<'t>)
+    (node: RegexNode<'t>) =
+    let exactPrefix = Optimizations.calcPrefixSets getNonInitialDerivative nodeToStateFlags c node
+    if exactPrefix.Length >= 4 then
+        let mts = c.Minterms()
+
+        let singleCharPrefixes =
+            exactPrefix
+            |> Seq.map (fun v ->
+                // negated set
+                if c.Solver.elemOfSet v mts[0] then
+                    None
+                else
+                    let chrs = c.MintermChars(v)
+                    chrs
+                    |> Option.bind (fun chrs ->
+                        if chrs.Length = 1 then Some(chrs.Span[0]) else None
+                    )
+            )
+            |> Seq.takeWhile Option.isSome
+            |> Seq.choose id
+            |> Seq.rev
+            |> Seq.toArray
+            |> Memory
+
+        singleCharPrefixes.Length >= 4
+    else
+        false

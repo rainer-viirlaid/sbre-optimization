@@ -235,14 +235,17 @@ type PrefixCharsetSearch () =
         
         // let a = this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
-        this.regex <- Regex("\{[^{}]*\}")
+        // this.MatchCountTesting()
+        
+        this.regex <- Regex(PatternsTwain.AZ_SHING)
         // this.regex.TSetMatcher.SetCharacterWeights(twainWeights100)
+        // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
         // this.regex.TSetMatcher.SetWeightsFromText(testInput, 11)
         
-        let c = this.regex.Count(dotnetRuntime)
+        let c = this.regex.Count(twain)
         
         // Console.WriteLine(c |> Seq.length)
-        Console.WriteLine(c)
+        // Console.WriteLine(c)
         ()
     
     member this.MatchCountTesting() =
@@ -270,9 +273,9 @@ type PrefixCharsetSearch () =
         |]
         for pat in pats do
             this.regex <- Regex(pat)
-            this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
+            // this.regex.TSetMatcher.SetStartSearchOptimization(StartSearchOptimization.WeightedApproximateSets)
             // this.regex.TSetMatcher.SetCharacterWeights(twainWeightsFull)
-            let count = this.regex.Count(testInput)
+            let count = this.regex.Count(twain)
             ()
             
         
